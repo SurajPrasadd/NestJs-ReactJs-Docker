@@ -1,0 +1,46 @@
+
+
+Run backend :nest start --watch
+
+Run frontend :npm run dev
+
+
+Docker:
+docker-compose up -d
+docker compose up -d postgres (Only SQL)
+
+Rebuid And Logs :
+docker compose down -v
+docker compose up --build
+docker compose up
+
+docker ps => List running containers
+docker ps -a => List all containers
+docker logs <container name> => Running Processes
+docker top <container name> => List processes
+docker start/stop/restart/pause/unpause/wait/kill/attach <container name> => Start Stop
+docker rm <container name> => Remove a container
+
+Docker Image:
+docker images => Listing images
+docker rmi <Image Name> => Removing an image
+
+
+Docker build:
+docker compose build <Image Name>
+docker compose up -d <Image Name> 
+
+Connect To postgres DB:
+docker exec -it <container name>  psql -U postgres -d appdb
+\dt
+
+List of TABLE:
+SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+
+TABLE Details :
+SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_name = 'users';
+INSERT INTO users (name, email) VALUES ('Suraj Prasad', 'suraj@example.com');
+SELECT * from users;
+
+
+
