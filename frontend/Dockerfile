@@ -1,10 +1,16 @@
 FROM node:25-bullseye
 
 WORKDIR /usr/src/app
+
+# Install dependencies
 COPY package*.json ./
 RUN npm ci
-COPY . .
-RUN npm rebuild
 
+# Copy source code
+COPY . .
+
+# Expose Vite dev server port
 EXPOSE 5173
-CMD ["npm", "run", "dev", "--", "--host"]
+
+# Run Vite in host mode and force polling
+CMD ["npm", "run", "dev", "--", "--host", "--force"]

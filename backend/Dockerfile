@@ -1,11 +1,10 @@
-# backend/Dockerfile
 FROM node:25-bullseye
 
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-RUN npm install -g @nestjs/cli
 RUN npm ci
+RUN npm install --save-dev ts-node-dev
 
 COPY . .
 

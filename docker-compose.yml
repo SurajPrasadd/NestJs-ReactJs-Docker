@@ -32,6 +32,8 @@ services:
       - "5000:3000"
     env_file:
       - .env
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - postgres
 
@@ -45,6 +47,8 @@ services:
       - "3000:5173"
     env_file:
       - .env
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
     depends_on:
       - backend
 

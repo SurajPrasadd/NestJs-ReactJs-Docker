@@ -11,8 +11,11 @@ docker compose up -d postgres (Only SQL)
 
 Rebuid And Logs :
 docker compose down -v
-docker compose up --build
+docker compose build
+docker compose build backend
 docker compose up
+docker compose up --build
+docker compose up -d --build
 
 docker ps => List running containers
 docker ps -a => List all containers

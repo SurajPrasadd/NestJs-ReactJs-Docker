@@ -21,7 +21,7 @@ export default function App() {
 
   return (
     <div className="p-6">
-      <h1 className="text-3xl font-bold mb-4">Users1</h1>
+      <h1 className="text-3xl font-bold mb-4">Users</h1>
       <button
         onClick={handleAdd}
         className="bg-blue-500 text-white rounded px-3 py-1 hover:bg-blue-600"

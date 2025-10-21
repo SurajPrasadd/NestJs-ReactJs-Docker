@@ -9,6 +9,6 @@ async function bootstrap() {
     credentials: true,
   });
   await app.listen(3000);
-  console.log('🚀 Backend running on http://localhost:3000');
+  console.log('🚀 Backend running on http://localhost:5000');
 }
 bootstrap();
