@@ -1,0 +1,48 @@
+### Get all users
+GET http://localhost:5000/users
+
+### Register a new user
+POST http://localhost:5000/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123",
+  "name": "Admin Doe",
+  "role": "admin"
+}
+
+### Login user
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "email": "user0@example.com",
+  "password": "password123"
+}
+
+### Login admin
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+
+### Refresh Token
+POST http://localhost:5000/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNGJhNjdlMC05NGEwLTRiYzItODk5Ny0yMTJlNzM1ZTFmOWMiLCJpYXQiOjE3NjEzNDg5NDYsImV4cCI6MTc2MTM0OTEzNn0.F7ehEP3iV1XKtp46k3qe5y-HvNH82G3psm4DOLSLwr8"
+}
+
+
+### All Users
+GET http://localhost:5000/users/getAllUser
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NTE4OTlhZS0xNDhkLTRjYjYtYWY1My1iNTcyZDIwOGI1ZTAiLCJpYXQiOjE3NjEzNDg5NTcsImV4cCI6MTc2MTM0OTAxN30.8CfvlRFud9pqPVVbW4sdcWaipXOwfBIO1Y5oVaG_Mok
+
+

@@ -4,18 +4,21 @@ Run backend :nest start --watch
 
 Run frontend :npm run dev
 
-
 Docker:
 docker-compose up -d
 docker compose up -d postgres (Only SQL)
 
 Rebuid And Logs :
+docker compose down; docker compose up -d --build
 docker compose down -v
-docker compose build
 docker compose build backend
-docker compose up
 docker compose up --build
-docker compose up -d --build
+
+docker exec -it backend bash
+docker exec -it frontend bash
+
+docker cp backend:/usr/src/app/node_modules ./backend
+
 
 docker ps => List running containers
 docker ps -a => List all containers
@@ -28,10 +31,10 @@ Docker Image:
 docker images => Listing images
 docker rmi <Image Name> => Removing an image
 
+docker volume prune => Delete Unused Storage 
+docker system prune => Delete Unused Network,Image,Storage
 
-Docker build:
-docker compose build <Image Name>
-docker compose up -d <Image Name> 
+
 
 Connect To postgres DB:
 docker exec -it <container name>  psql -U postgres -d appdb

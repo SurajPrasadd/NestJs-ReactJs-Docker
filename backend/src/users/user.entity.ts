@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Session } from '../auth/session.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 
-@Entity()
+@Entity('users')
 export class Users {
   @PrimaryGeneratedColumn()
   id: number;
@@ -9,5 +10,14 @@ export class Users {
   email: string;
 
   @Column()
-  name: string;
+  passwordHash: string; // hashed password (bcrypt)
+
+  @Column({ nullable: true })
+  name?: string;
+
+  @Column()
+  role: string;
+
+  @OneToMany(() => Session, (s) => s.user)
+  sessions: Session[];
 }
