@@ -5,7 +5,9 @@ import { LoginDto } from './dto/login.dto';
 import { ResponseUtil } from '../common/utils/response.util';
 import { RESPONSE_CODE } from '../common/constants/app.constants';
 import { RefreshDto } from './dto/refresh.dto';
+import { Public } from './guards/public.decorator';
 
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}

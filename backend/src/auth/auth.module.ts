@@ -9,6 +9,8 @@ import { Users } from '../users/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './guards/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -19,7 +21,10 @@ import { PassportModule } from '@nestjs/passport';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (config: ConfigService) => ({
-        secret: config.get<string>('JWT_ACCESS_TOKEN_SECRET', ''),
+        secret: config.get<string>(
+          'JWT_ACCESS_TOKEN_SECRET',
+          'replace_with_strong_secret',
+        ),
         signOptions: {
           expiresIn: config.get<string>('JWT_ACCESS_EXPIRES_IN', '900s') as any, // cast
         },
@@ -27,6 +32,14 @@ import { PassportModule } from '@nestjs/passport';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, AuthRepository, JwtStrategy],
+  providers: [
+    AuthService,
+    AuthRepository,
+    JwtStrategy,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AuthModule {}

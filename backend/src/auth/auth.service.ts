@@ -88,7 +88,10 @@ export class AuthService {
   async refresh(refreshToken: string) {
     try {
       const payload = this.jwtService.verify(refreshToken, {
-        secret: this.config.get<string>('JWT_REFRESH_TOKEN_SECRET'),
+        secret: this.config.get<string>(
+          'JWT_REFRESH_TOKEN_SECRET',
+          'replace_with_another_strong_secret',
+        ),
       }) as { sub: string; exp: string };
       // verify session
       const valid = await this.authRepo.findSession(payload.sub);
@@ -173,7 +176,10 @@ export class AuthService {
   }
 
   private async generateAccessToken(sessionid: string, expiresIn: string) {
-    const secret = this.config.get<string>('JWT_ACCESS_TOKEN_SECRET', '');
+    const secret = this.config.get<string>(
+      'JWT_ACCESS_TOKEN_SECRET',
+      'replace_with_strong_secret',
+    );
     const payload = { sub: sessionid };
     return this.jwtService.signAsync(payload, {
       secret: secret,
@@ -184,7 +190,7 @@ export class AuthService {
   private async generateRefreshToken(sessionid: string) {
     const secretRefresh = this.config.get<string>(
       'JWT_REFRESH_TOKEN_SECRET',
-      '',
+      'replace_with_another_strong_secret',
     );
     const expiresIn = this.config.get<string>('JWT_REFRESH_EXPIRES_IN', '7d');
     const payload = { sub: sessionid };

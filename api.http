@@ -31,18 +31,22 @@ Content-Type: application/json
 }
 
 
+### Manually set the access token here after login
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmOWViODA4NS1iMDZkLTQwN2UtODNjYi0yMjYyZWQ1OGQ1OWYiLCJpYXQiOjE3NjEzODAxNTAsImV4cCI6MTc2MTM4MTA1MH0.kCpCbeEnNqIGfyco2uXtFlMtoIudlNx3j_vrqP0-VLQ
+
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4OGMwYWM0Yi0wOGVmLTQxMzEtOGRjMi02ZDllNjk4NTY1NWQiLCJpYXQiOjE3NjEzODAyMjMsImV4cCI6MTc2MTk4NTAyM30.rTFRxRx2BRwJqujG4OINLG9_-gK6prIi_jZTO8nhqJ0
+
+
 ### Refresh Token
 POST http://localhost:5000/auth/refresh
 Content-Type: application/json
 
 {
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhNGJhNjdlMC05NGEwLTRiYzItODk5Ny0yMTJlNzM1ZTFmOWMiLCJpYXQiOjE3NjEzNDg5NDYsImV4cCI6MTc2MTM0OTEzNn0.F7ehEP3iV1XKtp46k3qe5y-HvNH82G3psm4DOLSLwr8"
+  "refreshToken": "{{refreshToken}}"
 }
 
 
 ### All Users
 GET http://localhost:5000/users/getAllUser
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NTE4OTlhZS0xNDhkLTRjYjYtYWY1My1iNTcyZDIwOGI1ZTAiLCJpYXQiOjE3NjEzNDg5NTcsImV4cCI6MTc2MTM0OTAxN30.8CfvlRFud9pqPVVbW4sdcWaipXOwfBIO1Y5oVaG_Mok
-
-
+Authorization: Bearer {{token}}

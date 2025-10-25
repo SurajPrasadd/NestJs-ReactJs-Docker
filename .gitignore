@@ -10,7 +10,6 @@ pnpm-debug.log*
 # Package manager artifacts
 .pnp.*
 .pnpm-store/
-package-lock.json
 # (keep lockfiles if you track them; remove above line if you want to track package-lock.json)
 
 # Build outputs - backend (Next.js) and frontend (React)

@@ -6,14 +6,17 @@ import { AuthRepository } from '../auth.repository';
 import { MESSAGES } from '../../common/constants/app.constants';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(
     private readonly config: ConfigService,
     private readonly authRepo: AuthRepository,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: config.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+      secretOrKey: config.get<string>(
+        'JWT_ACCESS_TOKEN_SECRET',
+        'replace_with_strong_secret',
+      ),
       passReqToCallback: false,
     });
   }
