@@ -7,9 +7,11 @@ export default function App() {
 
   const handleAdd = async () => {
     try {
-      await api.post("/users", {
+      await api.post("/auth/register", {
         name: `User ${Date.now()}`,
         email: `user${Date.now()}@mail.com`,
+        password: "password123",
+        role: "buyer",
       });
       refetch();
     } catch (error) {

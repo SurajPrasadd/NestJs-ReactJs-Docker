@@ -24,7 +24,7 @@ export const MESSAGES = {
   },
 };
 
-export const ROLES = ['admin', 'user'];
+export const ROLES = ['admin', 'vendor', 'approver', 'buyer'];
 
 export const RESPONSE_CODE = {
   SUCCESS: 200,

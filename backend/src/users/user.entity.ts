@@ -9,7 +9,7 @@ export class Users {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ name: 'password_hash' })
   passwordHash: string; // hashed password (bcrypt)
 
   @Column({ nullable: true })

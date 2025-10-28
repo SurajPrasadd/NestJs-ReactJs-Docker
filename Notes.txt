@@ -4,36 +4,29 @@ Run backend :nest start --watch
 
 Run frontend :npm run dev
 
+docker ps => List running containers
+
 Docker:
 docker-compose up -d
-docker compose up -d postgres (Only SQL)
+docker compose down
 
-Rebuid And Logs :
-docker compose down; docker compose up -d --build
-docker compose down -v
-docker compose build backend
-docker compose up --build
+Rebuid :
+docker compose down
+docker compose up -d --build
 
+Container Terminal :
 docker exec -it backend bash
 docker exec -it frontend bash
 
-docker cp backend:/usr/src/app/node_modules ./backend
+Execute the SQL file
+cat ./init.sql | docker exec -i postgres psql -U postgres -d appdb
 
-
-docker ps => List running containers
-docker ps -a => List all containers
-docker logs <container name> => Running Processes
-docker top <container name> => List processes
-docker start/stop/restart/pause/unpause/wait/kill/attach <container name> => Start Stop
-docker rm <container name> => Remove a container
-
-Docker Image:
-docker images => Listing images
-docker rmi <Image Name> => Removing an image
-
-docker volume prune => Delete Unused Storage 
-docker system prune => Delete Unused Network,Image,Storage
-
+TRUNCATE TABLE public.categories,
+               public.suppliers,
+               public.catalogs,
+               public.pricing,
+               public.contracts
+RESTART IDENTITY CASCADE;
 
 
 Connect To postgres DB:
@@ -43,10 +36,7 @@ docker exec -it <container name>  psql -U postgres -d appdb
 List of TABLE:
 SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
-TABLE Details :
-SELECT column_name, data_type, is_nullable, column_default FROM information_schema.columns WHERE table_name = 'users';
-INSERT INTO users (name, email) VALUES ('Suraj Prasad', 'suraj@example.com');
-SELECT * from users;
 
-
+# Build and remove storage
+docker compose down -v
 

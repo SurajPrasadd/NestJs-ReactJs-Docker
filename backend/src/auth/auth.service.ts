@@ -82,7 +82,7 @@ export class AuthService {
 
     const accessToken = await this.createSession(existingUser);
 
-    return ResponseUtil.success(MESSAGES.USER.REGISTER_SUCCESS, accessToken);
+    return ResponseUtil.success(MESSAGES.USER.REGISTER_SUCCESS, {existingUser,accessToken});
   }
 
   async refresh(refreshToken: string) {

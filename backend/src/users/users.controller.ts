@@ -17,12 +17,6 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Public()
-  @Post()
-  create(@Body() body: { name: string; email: string }) {
-    return this.usersService.create(body);
-  }
-
   @Roles('admin')
   @Get('getAllUser')
   getAllUser() {

@@ -6,18 +6,18 @@ POST http://localhost:5000/auth/register
 Content-Type: application/json
 
 {
-  "email": "admin@example.com",
+  "email": "buyer@example.com",
   "password": "password123",
-  "name": "Admin Doe",
-  "role": "admin"
+  "name": "buyer name",
+  "role": "buyer"
 }
 
-### Login user
+### Login buyer
 POST http://localhost:5000/auth/login
 Content-Type: application/json
 
 {
-  "email": "user0@example.com",
+  "email": "buyer@example.com",
   "password": "password123"
 }
 
@@ -32,11 +32,9 @@ Content-Type: application/json
 
 
 ### Manually set the access token here after login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmOWViODA4NS1iMDZkLTQwN2UtODNjYi0yMjYyZWQ1OGQ1OWYiLCJpYXQiOjE3NjEzODAxNTAsImV4cCI6MTc2MTM4MTA1MH0.kCpCbeEnNqIGfyco2uXtFlMtoIudlNx3j_vrqP0-VLQ
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYTJkNGFmZi01MDVmLTRlMmUtYjdkZS01NzQwYmU4OWZkMmYiLCJpYXQiOjE3NjE2NDM4MDUsImV4cCI6MTc2MTY0NDcwNX0.qwvVJYq042RE1AW0PrOsg2q0g_KkiXsMFaZ-eVVZ__U
 
-@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4OGMwYWM0Yi0wOGVmLTQxMzEtOGRjMi02ZDllNjk4NTY1NWQiLCJpYXQiOjE3NjEzODAyMjMsImV4cCI6MTc2MTk4NTAyM30.rTFRxRx2BRwJqujG4OINLG9_-gK6prIi_jZTO8nhqJ0
-
-
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYTJkNGFmZi01MDVmLTRlMmUtYjdkZS01NzQwYmU4OWZkMmYiLCJpYXQiOjE3NjE2NDM4MDUsImV4cCI6MTc2MjI0ODYwNX0.Ou96RkGdecC51tNOyjn-wHSbSQQ9toXHYcAe5X-0hQQ
 ### Refresh Token
 POST http://localhost:5000/auth/refresh
 Content-Type: application/json
@@ -46,7 +44,7 @@ Content-Type: application/json
 }
 
 
-### All Users
+### All Users - Admin
 GET http://localhost:5000/users/getAllUser
 Content-Type: application/json
 Authorization: Bearer {{token}}
