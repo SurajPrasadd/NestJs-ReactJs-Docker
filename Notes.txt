@@ -19,7 +19,7 @@ docker exec -it backend bash
 docker exec -it frontend bash
 
 Execute the SQL file
-cat ./init.sql | docker exec -i postgres psql -U postgres -d appdb
+cat ./db/init.sql | docker exec -i postgres psql -U postgres -d appdb
 
 TRUNCATE TABLE public.categories,
                public.suppliers,
