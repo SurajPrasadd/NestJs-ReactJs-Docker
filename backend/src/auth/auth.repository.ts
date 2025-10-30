@@ -4,6 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from '../users/user.entity';
 import { Repository } from 'typeorm';
 import { Session } from './session.entity';
+import { Supplier } from '../supplier/supplier.entity';
 
 @Injectable()
 export class AuthRepository {
@@ -11,6 +12,8 @@ export class AuthRepository {
     @InjectRepository(Users) private readonly userRepo: Repository<Users>,
     @InjectRepository(Session)
     private readonly sessionRepo: Repository<Session>,
+    @InjectRepository(Supplier)
+    private readonly supplierRepo: Repository<Supplier>,
   ) {}
 
   async findUserByEmail(email: string): Promise<Users | null> {
@@ -20,6 +23,11 @@ export class AuthRepository {
   async createUser(userData: Partial<Users>): Promise<Users> {
     const user = this.userRepo.create(userData);
     return this.userRepo.save(user);
+  }
+
+  async creatSupplier(supplier: Partial<Supplier>): Promise<Supplier> {
+    const addedsupplier = this.supplierRepo.create(supplier);
+    return this.supplierRepo.save(addedsupplier);
   }
 
   async createSession(

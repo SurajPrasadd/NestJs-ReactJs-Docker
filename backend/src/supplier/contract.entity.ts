@@ -3,39 +3,38 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToOne,
-  JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  JoinColumn,
 } from 'typeorm';
-import { Supplier } from '../supplier/supplier.entity';
+import { Supplier } from './supplier.entity';
 
-@Entity('contracts')
-export class Contract {
+@Entity('contacts')
+export class Contact {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Supplier, (supplier) => supplier.contracts, { onDelete: 'CASCADE' })
+  @ManyToOne(() => Supplier, (supplier) => supplier.contacts, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'supplier_id' })
   supplier: Supplier;
 
-  @Column({ length: 255, nullable: true })
-  contract_title?: string;
+  @Column({ length: 100 })
+  name: string;
 
-  @Column({ type: 'text' })
-  terms_and_conditions: string;
+  @Column({ length: 100, nullable: true })
+  email: string;
 
-  @Column({ type: 'date' })
-  effective_from: Date;
+  @Column({ length: 50, nullable: true })
+  phone: string;
 
-  @Column({ type: 'date', nullable: true })
-  expires_on?: Date;
+  @Column({ length: 50, nullable: true })
+  designation: string;
 
-  @Column({ type: 'int', default: 1, comment: '1-active | 0-expired | 2-pending' })
-  contract_status: number;
-
-  @CreateDateColumn({ name: 'created_at' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;
 
-  @UpdateDateColumn({ name: 'updated_at' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
   updatedAt: Date;
 }

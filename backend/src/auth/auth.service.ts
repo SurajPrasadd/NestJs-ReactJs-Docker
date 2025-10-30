@@ -42,18 +42,39 @@ export class AuthService {
 
     const normalizedInput = dto.role.trim().toLowerCase();
     if (ROLES.includes(normalizedInput as RoleType)) {
-      const newUser = await this.authRepo.createUser({
+      const userDetails = {
         email: dto.email,
         passwordHash,
         name: dto.name,
         role: dto.role,
-      });
+      };
+      let newUser: Users;
 
-      const accessToken = await this.createSession(newUser);
+      if (userDetails.role === 'vendor') {
+        // Create supplier first
+        const supplier = await this.authRepo.creatSupplier({
+          name: dto.supplierName,
+          contactEmail: dto.contactEmail,
+          phone: dto.phone,
+          address: dto.address,
+        });
+
+        // Create user with supplier reference
+        newUser = await this.authRepo.createUser({
+          ...userDetails,
+          supplier,
+        });
+      } else {
+        // Create regular user
+        newUser = await this.authRepo.createUser(userDetails);
+      }
+
+      // Generate access token
+      const token = await this.createSession(newUser);
 
       return ResponseUtil.success(MESSAGES.USER.REGISTER_SUCCESS, {
         user: newUser,
-        accessToken,
+        token,
       });
     } else {
       return ResponseUtil.error(
@@ -80,9 +101,12 @@ export class AuthService {
       );
     }
 
-    const accessToken = await this.createSession(existingUser);
+    const token = await this.createSession(existingUser);
 
-    return ResponseUtil.success(MESSAGES.USER.REGISTER_SUCCESS, {existingUser,accessToken});
+    return ResponseUtil.success(MESSAGES.USER.REGISTER_SUCCESS, {
+      existingUser,
+      token,
+    });
   }
 
   async refresh(refreshToken: string) {
@@ -109,9 +133,9 @@ export class AuthService {
         );
       }
 
-      const accessToken = await this.createSession(valid.user);
+      const token = await this.createSession(valid.user);
 
-      return ResponseUtil.success(MESSAGES.SESSION.CREATED, accessToken);
+      return ResponseUtil.success(MESSAGES.SESSION.CREATED, token);
     } catch (e) {
       if (e.name === 'TokenExpiredError') {
         // Attempt to decode the expired token to extract session id (sub)

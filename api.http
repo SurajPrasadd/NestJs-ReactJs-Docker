@@ -1,7 +1,23 @@
 ### Get all users
 GET http://localhost:5000/users
 
-### Register a new user
+### Register a vendor
+POST http://localhost:5000/auth/register
+Content-Type: application/json
+
+{
+  "supplierName": "TechSupplies Pvt Ltd",
+  "contactEmail": "sales@techsupplies.com",
+  "phone": "9876543210",
+  "address": "Bangalore, India",
+
+  "email": "vendor@example.com",
+  "password": "password123",
+  "name": "vendor name",
+  "role": "vendor"
+}
+
+### Register a buyer
 POST http://localhost:5000/auth/register
 Content-Type: application/json
 
@@ -12,6 +28,16 @@ Content-Type: application/json
   "role": "buyer"
 }
 
+### Login vendor
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "email": "vendor@example.com",
+  "password": "password123"
+}
+
+
 ### Login buyer
 POST http://localhost:5000/auth/login
 Content-Type: application/json
@@ -20,16 +46,6 @@ Content-Type: application/json
   "email": "buyer@example.com",
   "password": "password123"
 }
-
-### Login admin
-POST http://localhost:5000/auth/login
-Content-Type: application/json
-
-{
-  "email": "admin@example.com",
-  "password": "password123"
-}
-
 
 ### Manually set the access token here after login
 @token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYTJkNGFmZi01MDVmLTRlMmUtYjdkZS01NzQwYmU4OWZkMmYiLCJpYXQiOjE3NjE2NDM4MDUsImV4cCI6MTc2MTY0NDcwNX0.qwvVJYq042RE1AW0PrOsg2q0g_KkiXsMFaZ-eVVZ__U
