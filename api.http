@@ -6,15 +6,34 @@ POST http://localhost:5000/auth/register
 Content-Type: application/json
 
 {
-  "supplierName": "TechSupplies Pvt Ltd",
-  "contactEmail": "sales@techsupplies.com",
+  "businessName": "TechSupplies Pvt Ltd",
+  "businessEmail": "sales@techsupplies.com",
+  "businessPhone": "9876543210",
+  "businessAddress": "Bangalore, India",
   "phone": "9876543210",
-  "address": "Bangalore, India",
+  "designation": "Manager",
+  "department": "IT",
 
   "email": "vendor@example.com",
   "password": "password123",
   "name": "vendor name",
   "role": "vendor"
+}
+
+
+### Register a approver
+POST http://localhost:5000/auth/register
+Content-Type: application/json
+
+{
+  "phone": "9876543210",
+  "designation": "Manager",
+  "department": "IT",
+
+  "email": "approver@example.com",
+  "password": "password123",
+  "name": "approver name",
+  "role": "approver"
 }
 
 ### Register a buyer
@@ -25,7 +44,8 @@ Content-Type: application/json
   "email": "buyer@example.com",
   "password": "password123",
   "name": "buyer name",
-  "role": "buyer"
+  "role": "buyer",
+  "phone": "9876543210",
 }
 
 ### Login vendor
@@ -34,6 +54,15 @@ Content-Type: application/json
 
 {
   "email": "vendor@example.com",
+  "password": "password123"
+}
+
+### Login approver
+POST http://localhost:5000/auth/login
+Content-Type: application/json
+
+{
+  "email": "approver@example.com",
   "password": "password123"
 }
 

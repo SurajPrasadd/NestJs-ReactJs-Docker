@@ -7,7 +7,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Supplier } from '../supplier/supplier.entity';
+import { Business } from './business.entity';
 import { Product } from '../products/products.entity';
 
 @Entity('stock')
@@ -20,10 +20,10 @@ export class Stock {
   @JoinColumn({ name: 'product_id' })
   product: Product;
 
-  // Each stock record belongs to one supplier
-  @ManyToOne(() => Supplier, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'supplier_id' })
-  supplier: Supplier;
+  // Each stock record belongs to one business
+  @ManyToOne(() => Business, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'business_id' })
+  business: Business;
 
   @Column({ type: 'int', default: 0 })
   quantity: number;

@@ -5,11 +5,11 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import { SupplierModule } from './supplier/supplier.module';
 import { CartModule } from './cart/cart.module';
 import { ContractModule } from './contracts/contracts.module';
 import { OrderModule } from './order/order.module';
 import { ProductModule } from './products/product.module';
+import { BusinessModule } from './business/business.module';
 
 @Module({
   imports: [
@@ -31,7 +31,7 @@ import { ProductModule } from './products/product.module';
     ContractModule,
     OrderModule,
     ProductModule,
-    SupplierModule,
+    BusinessModule,
   ],
   controllers: [AppController],
   providers: [AppService],

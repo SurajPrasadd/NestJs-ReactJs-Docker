@@ -4,7 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Users } from '../users/user.entity';
 import { Repository } from 'typeorm';
 import { Session } from './session.entity';
-import { Supplier } from '../supplier/supplier.entity';
+import { Business } from '../business/business.entity';
+import { Contact } from '../business/contract.entity';
 
 @Injectable()
 export class AuthRepository {
@@ -12,12 +13,17 @@ export class AuthRepository {
     @InjectRepository(Users) private readonly userRepo: Repository<Users>,
     @InjectRepository(Session)
     private readonly sessionRepo: Repository<Session>,
-    @InjectRepository(Supplier)
-    private readonly supplierRepo: Repository<Supplier>,
+    @InjectRepository(Business)
+    private readonly businessRepo: Repository<Business>,
+    @InjectRepository(Contact)
+    private readonly contactRepo: Repository<Contact>,
   ) {}
 
   async findUserByEmail(email: string): Promise<Users | null> {
-    return this.userRepo.findOne({ where: { email } });
+    return this.userRepo.findOne({
+      where: { email, isActive: true },
+      relations: ['contact'],
+    });
   }
 
   async createUser(userData: Partial<Users>): Promise<Users> {
@@ -25,9 +31,25 @@ export class AuthRepository {
     return this.userRepo.save(user);
   }
 
-  async creatSupplier(supplier: Partial<Supplier>): Promise<Supplier> {
-    const addedsupplier = this.supplierRepo.create(supplier);
-    return this.supplierRepo.save(addedsupplier);
+  async creatBusiness(business: Partial<Business>): Promise<Business> {
+    // Check if business already exists by name
+    const existingBusiness = await this.businessRepo.findOne({
+      where: { businessName: business.businessName, isActive: true },
+    });
+
+    if (existingBusiness) {
+      // If found, return the existing one
+      return existingBusiness;
+    }
+
+    // If not found, create a new business
+    const newBusiness = this.businessRepo.create(business);
+    return await this.businessRepo.save(newBusiness);
+  }
+
+  async createUserContact(contactData: Partial<Contact>): Promise<Contact> {
+    const contact = this.contactRepo.create(contactData);
+    return await this.contactRepo.save(contact);
   }
 
   async createSession(

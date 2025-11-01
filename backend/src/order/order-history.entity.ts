@@ -8,7 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Users } from '../users/user.entity';
-import { Supplier } from '../supplier/supplier.entity';
+import { Business } from '../business/business.entity';
 import { Product } from '../products/products.entity';
 
 export enum OrderStatus {
@@ -34,10 +34,10 @@ export class OrderHistory {
   @JoinColumn({ name: 'buyer_id' })
   buyer: Users;
 
-  // Supplier fulfilling the order
-  @ManyToOne(() => Supplier, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'supplier_id' })
-  supplier: Supplier;
+  // business fulfilling the order
+  @ManyToOne(() => Business, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'business_id' })
+  business: Business;
 
   @Column({
     name: 'total_amount',

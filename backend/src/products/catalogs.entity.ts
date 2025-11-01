@@ -1,3 +1,4 @@
+import { Business } from '../business/business.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -7,18 +8,17 @@ import {
   UpdateDateColumn,
   JoinColumn,
 } from 'typeorm';
-import { Supplier } from '../supplier/supplier.entity';
 
 @Entity('catalogs')
 export class Catalog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Supplier, (supplier) => supplier.catalogs, {
+  @ManyToOne(() => Business, (business) => business.catalogs, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'supplier_id' })
-  supplier: Supplier;
+  @JoinColumn({ name: 'business_id' })
+  business: Business;
 
   @Column({ length: 100 })
   name: string;

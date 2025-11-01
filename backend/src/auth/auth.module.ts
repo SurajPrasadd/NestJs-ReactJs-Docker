@@ -11,13 +11,14 @@ import { JwtStrategy } from './guards/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
-import { Supplier } from '../supplier/supplier.entity';
+import { Business } from '../business/business.entity';
+import { Contact } from '../business/contract.entity';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     ConfigModule,
-    TypeOrmModule.forFeature([Users, Session, Supplier]),
+    TypeOrmModule.forFeature([Users, Session, Business, Contact]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

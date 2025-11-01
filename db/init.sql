@@ -3,7 +3,7 @@ BEGIN;
 -- Disable constraint checks temporarily
 SET CONSTRAINTS ALL DEFERRED;
 
-TRUNCATE TABLE suppliers CASCADE;
+TRUNCATE TABLE business CASCADE;
 TRUNCATE TABLE contacts CASCADE;
 TRUNCATE TABLE categories CASCADE;
 TRUNCATE TABLE catalogs CASCADE;
@@ -15,8 +15,8 @@ TRUNCATE TABLE order_history CASCADE;
 TRUNCATE TABLE users CASCADE;
 TRUNCATE TABLE sessions CASCADE;
 
---suppliers
-INSERT INTO suppliers (id, name, contact_email, phone, address, is_active, updated_at, created_at) VALUES
+--business
+INSERT INTO business (id, business_name, business_email, business_phone, business_address, is_active, updated_at, created_at) VALUES
 (1, 'Reliance Distributors', 'contact@reliancedist.in', '022-40012345', '1 Reliance House, Mumbai', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (2, 'Tata Wholesale', 'info@tatawholesale.com', '011-23456789', '2 Tata Towers, Delhi', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, 'Apollo Suppliers', 'mail@apollosupp.com', '040-56001234', '3 Apollo Lane, Hyderabad', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -34,7 +34,7 @@ INSERT INTO suppliers (id, name, contact_email, phone, address, is_active, updat
 (15, 'Asian Paints Allied', 'contact@asianallied.in', '022-44332211', '15 Color Drive, Mumbai', TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 --users
-INSERT INTO users (id, name, email, password_hash, role, supplier_id, is_active, updated_at, created_at) VALUES
+INSERT INTO users (id, name, email, password_hash, role, business_id, is_active, updated_at, created_at) VALUES
 (1, 'Amit Sharma', 'amit.sharma@domain.com', 'your_hash_1', 'admin', 1, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (2, 'Priya Singh', 'priya.singh@domain.com', 'your_hash_2', 'vendor', 2, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, 'Vikram Mehra', 'vikram.mehra@domain.com', 'your_hash_3', 'approver', 3, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -52,22 +52,22 @@ INSERT INTO users (id, name, email, password_hash, role, supplier_id, is_active,
 (15, 'Yogesh Desai', 'yogesh.desai@domain.com', 'your_hash_15', 'buyer', 15, TRUE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- contacts
-INSERT INTO contacts (id, supplier_id, name, email, phone, designation, updated_at, created_at) VALUES
-(1, 1, 'Rakesh Kumar', 'rakesh.kumar@reliancedist.in', '9876543101', 'Manager', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(2, 2, 'Sunita Iyer', 'sunita.iyer@tatawholesale.com', '9876543102', 'Head Sales', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(3, 3, 'Manoj Nair', 'manoj.nair@apollosupp.com', '9876543103', 'Director', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(4, 4, 'Isha Banerjee', 'isha.banerjee@flipkartpartner.in', '9876543104', 'Accountant', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(5, 5, 'Anil Pathak', 'anil.pathak@mahindralog.in', '9876543105', 'Logistics Lead', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(6, 6, 'Pooja Gupta', 'pooja.gupta@vedantamerc.com', '9876543106', 'Support', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(7, 7, 'Nitin Chawla', 'nitin.chawla@infosyssup.in', '9876543107', 'Store Incharge', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(8, 8, 'Aarti Verma', 'aarti.verma@hindalcodist.com', '9876543108', 'Supervisor', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(9, 9, 'Santosh Jain', 'santosh.jain@godrejmart.in', '9876543109', 'Purchase Officer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(10, 10, 'Shalini Sharma', 'shalini.sharma@zomatoproc.com', '9876543110', 'Procurement', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(11, 11, 'Ajay Singh', 'ajay.singh@itcvendor.com', '9876543111', 'Sales Manager', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(12, 12, 'Rajiv Pillai', 'rajiv.pillai@bajajtraders.in', '9876543112', 'Director', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(13, 13, 'Madhuri Das', 'madhuri.das@birlasupp.com', '9876543113', 'Finance Head', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(14, 14, 'Kiran Deshmukh', 'kiran.deshmukh@infoservehub.com', '9876543114', 'Assistant', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
-(15, 15, 'Varun Bhargava', 'varun.bhargava@asianallied.in', '9876543115', 'Senior Manager', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO contacts (id, users_id, phone, designation, department, updated_at, created_at) VALUES
+(1, 1, '9876543101', 'Manager', 'Operations', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(2, 2, '9876543102', 'Head Sales', 'Sales', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(3, 3, '9876543103', 'Director', 'Management', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(4, 4, '9876543104', 'Accountant', 'Finance', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(5, 5, '9876543105', 'Logistics Lead', 'Logistics', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(6, 6, '9876543106', 'Support', 'Customer Care', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(7, 7, '9876543107', 'Store Incharge', 'Inventory', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(8, 8, '9876543108', 'Supervisor', 'Operations', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(9, 9, '9876543109', 'Purchase Officer', 'Procurement', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(10, 10, '9876543110', 'Procurement', 'Procurement', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(11, 11, '9876543111', 'Sales Manager', 'Sales', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(12, 12, '9876543112', 'Director', 'Management', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(13, 13, '9876543113', 'Finance Head', 'Finance', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(14, 14, '9876543114', 'Assistant', 'Support', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+(15, 15, '9876543115', 'Senior Manager', 'Operations', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- categories
 INSERT INTO categories (id, name, is_active, created_at) VALUES
@@ -85,7 +85,7 @@ INSERT INTO categories (id, name, is_active, created_at) VALUES
 (12, 'Cleaning', TRUE, CURRENT_TIMESTAMP);
 
 -- catalogs
-INSERT INTO catalogs (id, supplier_id, name, description, is_active, created_at) VALUES
+INSERT INTO catalogs (id, business_id, name, description, is_active, created_at) VALUES
 (1, 1, 'ElectroCart', 'Latest electronic gadgets', TRUE, CURRENT_TIMESTAMP),
 (2, 2, 'OfficeMart', 'Quality office supplies', TRUE, CURRENT_TIMESTAMP),
 (3, 3, 'GroceryBox', 'Groceries and edibles wholesale', TRUE, CURRENT_TIMESTAMP),
@@ -100,7 +100,7 @@ INSERT INTO catalogs (id, supplier_id, name, description, is_active, created_at)
 (12, 12, 'CleanAll', 'Cleaners & disinfectants', TRUE, CURRENT_TIMESTAMP);
 
 
-INSERT INTO products (id, catalog_id, category_id, supplier_id, name, sku, description, price, currency, min_quantity, max_quantity, total_quantity, created_at, updated_at, is_active)
+INSERT INTO products (id, catalog_id, category_id, business_id, name, sku, description, price, currency, min_quantity, max_quantity, total_quantity, created_at, updated_at, is_active)
 VALUES
 (1, 1, 1, 1, 'Smartphone Model A', 'SM-A-001', 'Latest 5G smartphone', 18500.00, 'Rs', 1, 5, 100, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE),
 (2, 1, 1, 1, 'Bluetooth Headphones', 'BT-H-002', 'Noise-cancelling headphones', 3500.00, 'Rs', 1, 10, 210, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE),
@@ -174,7 +174,7 @@ VALUES
 (70, 6, 6, 6, 'Bed Frame', 'BF-070', 'Queen-size metal', 4950.00, 'Rs', 1, 5, 13, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE);
 
 --stock
-COMMIT;INSERT INTO stock (id, product_id, supplier_id, quantity, created_at, updated_at) VALUES
+COMMIT;INSERT INTO stock (id, product_id, business_id, quantity, created_at, updated_at) VALUES
 (1, 11, 7, 25, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (2, 12, 10, 80, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (3, 13, 11, 30, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
@@ -236,7 +236,7 @@ COMMIT;INSERT INTO stock (id, product_id, supplier_id, quantity, created_at, upd
 (59, 69, 9, 53, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
 (60, 70, 6, 13, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO contracts (buyer_id, supplier_id, contract_number, start_date, end_date, terms, is_active)
+INSERT INTO contracts (buyer_id, business_id, contract_number, start_date, end_date, terms, is_active)
 VALUES
 (2, 1, 'CON-2025-001', '2025-01-10', '2025-12-31', 'Annual supply of electronics. Payment within 30 days.', TRUE),
 (3, 2, 'CON-2025-002', '2025-02-01', '2025-12-31', 'Office furniture supply. Discount on bulk orders.', TRUE),
@@ -256,7 +256,7 @@ VALUES
 (6, 10, 1200.00, 'INR'),
 (7, 1, 87000.00, 'INR');
 
-INSERT INTO order_history (product_id, buyer_id, supplier_id, total_amount, is_active, status)
+INSERT INTO order_history (product_id, buyer_id, business_id, total_amount, is_active, status)
 VALUES
 (1, 2, 1, 156000.00, TRUE, 5),
 (2, 3, 2, 15500.00, TRUE, 4),

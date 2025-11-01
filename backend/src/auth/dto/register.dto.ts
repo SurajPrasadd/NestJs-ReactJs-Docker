@@ -23,11 +23,19 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
-  supplierName: string;
+  businessName: string;
 
   @IsOptional()
   @IsEmail()
-  contactEmail?: string;
+  businessEmail?: string;
+
+  @IsOptional()
+  @IsString()
+  businessPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  businessAddress?: string;
 
   @IsOptional()
   @IsString()
@@ -35,5 +43,9 @@ export class RegisterDto {
 
   @IsOptional()
   @IsString()
-  address?: string;
+  designation?: string;
+
+  @IsOptional()
+  @IsString()
+  department?: string;
 }

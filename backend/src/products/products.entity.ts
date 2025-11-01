@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 import { Catalog } from './catalogs.entity';
 import { Category } from './category.entity';
-import { Supplier } from '../supplier/supplier.entity';
+import { Business } from '../business/business.entity';
 
 @Entity('products')
 export class Product {
@@ -26,10 +26,10 @@ export class Product {
   @JoinColumn({ name: 'category_id' })
   category: Category;
 
-  // Relation: Many products belong to one supplier
-  @ManyToOne(() => Supplier, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'supplier_id' })
-  supplier: Supplier;
+  // Relation: Many products belong to one business
+  @ManyToOne(() => Business, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'business_id' })
+  business: Business;
 
   @Column({ length: 150 })
   name: string;

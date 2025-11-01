@@ -50,35 +50,54 @@ export class AuthService {
       };
       let newUser: Users;
 
-      if (userDetails.role === 'vendor') {
-        // Create supplier first
-        const supplier = await this.authRepo.creatSupplier({
-          name: dto.supplierName,
-          contactEmail: dto.contactEmail,
-          phone: dto.phone,
-          address: dto.address,
+      if (
+        dto.businessName?.trim() &&
+        dto.businessEmail?.trim() &&
+        dto.businessPhone?.trim() &&
+        dto.businessAddress?.trim()
+      ) {
+        // Create business first
+        const business = await this.authRepo.creatBusiness({
+          businessName: dto.businessName,
+          businessEmail: dto.businessEmail,
+          businessPhone: dto.businessPhone,
+          businessAddress: dto.businessAddress,
         });
 
-        // Create user with supplier reference
+        // Create user with business reference
         newUser = await this.authRepo.createUser({
           ...userDetails,
-          supplier,
+          business,
         });
       } else {
         // Create regular user
         newUser = await this.authRepo.createUser(userDetails);
       }
 
+      const contactDetails = await this.authRepo.createUserContact({
+        users: newUser,
+        phone: dto.phone,
+        designation: dto.designation,
+        department: dto.department,
+      });
+
       // Generate access token
       const token = await this.createSession(newUser);
 
       return ResponseUtil.success(MESSAGES.USER.REGISTER_SUCCESS, {
-        user: newUser,
+        user: {
+          ...newUser,
+          contact: {
+            phone: contactDetails.phone,
+            designation: contactDetails.designation,
+            department: contactDetails.department,
+          },
+        },
         token,
       });
     } else {
       return ResponseUtil.error(
-        MESSAGES.USER.INVALID_CREDENTIALS,
+        MESSAGES.USER.INVALID_ROLE,
         RESPONSE_CODE.BAD_REQUEST,
       );
     }
@@ -96,7 +115,7 @@ export class AuthService {
     const valid = await bcrypt.compare(dto.password, existingUser.passwordHash);
     if (!valid) {
       return ResponseUtil.error(
-        MESSAGES.USER.INVALID_CREDENTIALS,
+        MESSAGES.USER.NVALID_PASSWORD,
         RESPONSE_CODE.BAD_REQUEST,
       );
     }

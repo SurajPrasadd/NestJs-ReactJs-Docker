@@ -9,8 +9,13 @@ export const MESSAGES = {
     USER_ALREADY_EXISTS: 'User with this email already exists.',
     REGISTER_SUCCESS: 'User registered successfully',
     LOGIN_SUCCESS: 'Login successful',
-    INVALID_CREDENTIALS: 'Invalid email or password or role',
+    INVALID_ROLE: 'Invalid Role',
+    NVALID_PASSWORD: 'Invalid Password',
+    INVALID_CREDENTIALS: 'Invalid request',
     NOT_FOUND: 'User not found',
+    INVALID_BUSINESS: 'Business details are required for vendor registration',
+    INVALID_APPROVER:
+      'Designation and Department are required for approver registration',
   },
 
   AUTH: {
@@ -24,6 +29,8 @@ export const MESSAGES = {
   },
 };
 
+export const VENDOR = 'vendor';
+export const APPROVER = 'approver';
 export const ROLES = ['admin', 'vendor', 'approver', 'buyer'];
 
 export const RESPONSE_CODE = {

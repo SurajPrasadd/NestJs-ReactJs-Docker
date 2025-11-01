@@ -22,7 +22,7 @@ Execute the SQL file
 cat ./db/init.sql | docker exec -i postgres psql -U postgres -d appdb
 
 TRUNCATE TABLE public.categories,
-               public.suppliers,
+               public.business,
                public.catalogs,
                public.pricing,
                public.contracts

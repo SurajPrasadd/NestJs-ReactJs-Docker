@@ -6,31 +6,27 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
-import { Supplier } from './supplier.entity';
+import { Users } from '../users/user.entity';
 
 @Entity('contacts')
 export class Contact {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Supplier, (supplier) => supplier.contacts, {
-    onDelete: 'CASCADE',
-  })
-  @JoinColumn({ name: 'supplier_id' })
-  supplier: Supplier;
-
-  @Column({ length: 100 })
-  name: string;
-
-  @Column({ length: 100, nullable: true })
-  email: string;
+  @OneToOne(() => Users, (users) => users.contact)
+  @JoinColumn({ name: 'users_id' })
+  users: Users;
 
   @Column({ length: 50, nullable: true })
   phone: string;
 
   @Column({ length: 50, nullable: true })
   designation: string;
+
+  @Column({ length: 50, nullable: true })
+  department: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;

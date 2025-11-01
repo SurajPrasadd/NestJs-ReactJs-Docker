@@ -8,7 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Users } from '../users/user.entity';
-import { Supplier } from '../supplier/supplier.entity';
+import { Business } from '../business/business.entity';
 
 @Entity('contracts')
 export class Contract {
@@ -20,10 +20,10 @@ export class Contract {
   @JoinColumn({ name: 'buyer_id' })
   buyer: Users;
 
-  // Supplier party in the contract
-  @ManyToOne(() => Supplier, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'supplier_id' })
-  supplier: Supplier;
+  // business party in the contract
+  @ManyToOne(() => Business, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'business_id' })
+  business: Business;
 
   @Column({ name: 'contract_number', length: 100, unique: true })
   contractNumber: string;

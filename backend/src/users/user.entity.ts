@@ -1,4 +1,4 @@
-import { Supplier } from '../supplier/supplier.entity';
+import { Business } from '../business/business.entity';
 import { Session } from '../auth/session.entity';
 import {
   Entity,
@@ -9,7 +9,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
+import { Contact } from '../business/contract.entity';
 
 @Entity('users')
 export class Users {
@@ -28,9 +30,12 @@ export class Users {
   @Column()
   role: string;
 
-  @ManyToOne(() => Supplier, { nullable: true, onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'supplier_id' })
-  supplier: Supplier;
+  @ManyToOne(() => Business, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'business_id' })
+  business: Business;
+
+  @OneToOne(() => Contact, (contact) => contact.users)
+  contact: Contact;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;
