@@ -18,7 +18,7 @@ export class Product {
   // Relation: Many products belong to one category
   @ManyToOne(() => Category, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'category_id' })
-  category: Category;
+  category: Category | null;
 
   // Relation: Many products belong to one business
   @ManyToOne(() => Business, { onDelete: 'CASCADE' })

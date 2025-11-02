@@ -42,3 +42,7 @@ export const RESPONSE_CODE = {
   NOT_FOUND: 404,
   INTERNAL_ERROR: 500,
 };
+
+export const UPLOAD_PATH = {
+  IMAGE: '/uploads/products/',
+};

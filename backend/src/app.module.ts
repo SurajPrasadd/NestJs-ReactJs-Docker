@@ -11,6 +11,8 @@ import { OrderModule } from './order/order.module';
 import { ProductModule } from './products/product.module';
 import { BusinessModule } from './business/business.module';
 import { SequenceFixService } from './common/utils/fix-sequences.util';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -25,6 +27,10 @@ import { SequenceFixService } from './common/utils/fix-sequences.util';
       autoLoadEntities: true,
       synchronize: true,
       logging: true, // optional: shows SQL logs in console
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), // points to your uploads folder
+      serveRoot: '/uploads', // accessible at http://localhost:5000/uploads/...
     }),
     UsersModule,
     AuthModule,

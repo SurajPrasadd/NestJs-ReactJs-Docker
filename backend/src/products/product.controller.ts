@@ -7,17 +7,22 @@ import {
   Delete,
   Param,
   ParseIntPipe,
+  UploadedFile,
+  Patch,
 } from '@nestjs/common';
 import { Roles } from '../auth/guards/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { ResponseUtil } from '../common/utils/response.util';
-import { RESPONSE_CODE } from '../common/constants/app.constants';
+import { RESPONSE_CODE, UPLOAD_PATH } from '../common/constants/app.constants';
 import { Public } from '../auth/guards/public.decorator';
 import { ProductService } from './product.service';
 import { CategoriesService } from './categories.service';
 import { CreateUpdateDto } from './dto/create-update.dto';
 import { QueryCategoryDto } from './dto/query-category.dto';
 import { MESSAGES } from '../common/constants/app.constants';
+import { UploadFile } from '../common/upload-file.decorator';
+import { CreateProductDto } from './dto/create-product.dto';
+import { QueryProductDto } from './dto/query-product.dto';
 
 @UseGuards(RolesGuard)
 @Controller('product')
@@ -73,17 +78,97 @@ export class ProductController {
     @Body() dto: CreateUpdateDto,
   ) {
     try {
-      return await this.categoriesService.update(id, dto);
+      return ResponseUtil.success(
+        MESSAGES.SUCCESS,
+        await this.categoriesService.update(id, dto),
+      );
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }
   }
 
   @Public()
-  @Post('getParentCategories')
-  async getParentCategories(@Body() dto: QueryCategoryDto) {
+  @Post('getCategories')
+  async getCategories(@Body() dto: QueryCategoryDto) {
     try {
-      return await this.categoriesService.getCategories(dto);
+      return ResponseUtil.success(
+        MESSAGES.SUCCESS,
+        await await this.categoriesService.getCategories(dto),
+      );
+    } catch (error: unknown) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
+  }
+
+  @Post('createProduct')
+  @UploadFile('jpeg,jpg,png', 'products')
+  async createProduct(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('dto') dtoString: string, // JSON string
+  ) {
+    try {
+      const dto: CreateProductDto = JSON.parse(dtoString); // manually parse
+      const imagePath = file ? UPLOAD_PATH.IMAGE + file.filename : null;
+      if (imagePath) {
+        return ResponseUtil.success(
+          MESSAGES.SUCCESS,
+          await await await this.productService.createProduct(dto, imagePath),
+        );
+      } else {
+        return ResponseUtil.handleError(
+          'Upload Fail',
+          RESPONSE_CODE.INTERNAL_ERROR,
+        );
+      }
+    } catch (error: unknown) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
+  }
+
+  @Patch('updateProduct/:sku')
+  @UploadFile('jpeg,jpg,png', 'products')
+  async updateProduct(
+    @Param('sku') sku: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Body('dto') dtoString: string,
+  ) {
+    try {
+      const dto: Partial<CreateProductDto> = JSON.parse(dtoString);
+      const imagePath = file ? UPLOAD_PATH.IMAGE + file.filename : null;
+
+      const result = await this.productService.updateProductBySku(
+        sku,
+        dto,
+        imagePath,
+      );
+
+      return ResponseUtil.success(MESSAGES.SUCCESS, result);
+    } catch (error) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
+  }
+
+  @Delete('deleteProduct/:sku')
+  async deleteProduct(@Param('sku') sku: string) {
+    try {
+      return ResponseUtil.success(
+        MESSAGES.SUCCESS,
+        await this.productService.deleteProductBySku(sku),
+      );
+    } catch (error: unknown) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
+  }
+
+  @Public()
+  @Post('getProduct')
+  async getProduct(@Body() dto: QueryProductDto) {
+    try {
+      console.log('Received body:', dto);
+      return ResponseUtil.success(
+        MESSAGES.SUCCESS,
+        await await this.productService.getProducts(dto),
+      );
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }

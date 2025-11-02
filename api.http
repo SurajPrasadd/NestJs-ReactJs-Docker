@@ -100,9 +100,9 @@ Content-Type: application/json
 
 
 ### Manually set the access token here after login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmOTJjYmVlMi1iMmVkLTQyMTYtYTE5Mi1mNDAwMWY2NGU2ZjQiLCJpYXQiOjE3NjIwNTU2NDMsImV4cCI6MTc2MjA1NjU0M30._DJODYMRoavIg5E16koaFqaYX6z0800bqFDykyuhXN4
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmZTE4NjcwNS00ZTUyLTRjOGMtYmNlNC00YTljYWVlZTlhMDAiLCJpYXQiOjE3NjIwOTE3NTQsImV4cCI6MTc2MjA5MjY1NH0.HXiTrRWT_3YPd-EghW-YcDKwkP70vvfaz85-yXwaZ4Y
 
-@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmOTJjYmVlMi1iMmVkLTQyMTYtYTE5Mi1mNDAwMWY2NGU2ZjQiLCJpYXQiOjE3NjIwNTU2NDMsImV4cCI6MTc2MjY2MDQ0M30.ieuF9ZPzN6VI4EfVgMEUdzaMEs1y_9KESsEUdgQx890
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2YTJjZTYzYy1lZDk5LTQxMzUtYWFiMC05ZGU1YTkyODBlZWIiLCJpYXQiOjE3NjIwODI4NzgsImV4cCI6MTc2MjY4NzY3OH0.1jTCI-4Nu2GlzZ93xgldWff9Gl8DmvClvcLL0vMqX8M
 
 ### Refresh Token
 POST http://localhost:5000/auth/refresh
@@ -142,12 +142,74 @@ Authorization: Bearer {{token}}
   "isActive": false
 }
 
-### Update Categories
-POST http://localhost:5000/product/getParentCategories
+### Fetch all categories
+POST http://localhost:5000/product/getCategories
 Content-Type: application/json
 
 {
   "search": "",
   "page": 1,
   "limit": 10
+}
+
+### Create Product with Image
+POST http://localhost:5000/product/createProduct
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="image.jpg"
+Content-Type: image/jpeg
+
+< ./db/testfile/image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="dto"
+
+{
+  "businessId": 1,
+  "categoryId": 2,
+  "name": "Ultra Cement",
+  "description": "High quality cement",
+  "price": 450,
+  "currency": "Rs",
+  "minQuantity": 10
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Update Product by SKU
+PATCH http://localhost:5000/product/updateProduct/CA15
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="image.jpg"
+Content-Type: image/jpeg
+
+< ./db/testfile/image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="dto"
+
+{
+  "name": "Ultra Cement Premium",
+  "price": 475,
+  "description": "Updated description for better quality",
+  "minQuantity": 20,
+  "categoryId": 3
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+###  Product delete
+DELETE http://localhost:5000/product/deleteProduct/CA12
+Authorization: Bearer {{token}}
+
+###  Fetch all Product
+POST http://localhost:5000/product/getProduct
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "search": "",
+  "page":2,
+  "sortBy": "price",
+  "order": "ASC"
 }
