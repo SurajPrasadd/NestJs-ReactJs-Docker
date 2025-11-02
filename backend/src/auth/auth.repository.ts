@@ -31,6 +31,13 @@ export class AuthRepository {
     return this.userRepo.save(user);
   }
 
+  async fineOneBusiness(businessName: string): Promise<Business | null> {
+    // Check if business already exists by name
+    return this.businessRepo.findOne({
+      where: { businessName, isActive: true },
+    });
+  }
+
   async creatBusiness(business: Partial<Business>): Promise<Business> {
     // Check if business already exists by name
     const existingBusiness = await this.businessRepo.findOne({

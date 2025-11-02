@@ -32,10 +32,10 @@ export class Users {
 
   @ManyToOne(() => Business, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'business_id' })
-  business: Business;
+  business?: Business | null;
 
   @OneToOne(() => Contact, (contact) => contact.users)
-  contact: Contact;
+  contact?: Contact;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

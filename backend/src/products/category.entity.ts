@@ -23,7 +23,7 @@ export class Category {
     onDelete: 'SET NULL',
   })
   @JoinColumn({ name: 'parent_id' })
-  parent: Category;
+  parent: Category | null;
 
   // Reverse relation - one category can have multiple subcategories
   @OneToMany(() => Category, (category) => category.parent)
@@ -37,4 +37,5 @@ export class Category {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
   updatedAt: Date;
+  category: Promise<Category>;
 }

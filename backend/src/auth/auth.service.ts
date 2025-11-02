@@ -13,11 +13,13 @@ import {
   MESSAGES,
   ROLES,
   RESPONSE_CODE,
+  VENDOR,
 } from '../common/constants/app.constants';
 import { ResponseUtil } from '../common/utils/response.util';
 import { Users } from 'src/users/user.entity';
 import { Session } from './session.entity';
 import { v4 as uuidv4 } from 'uuid';
+import { Business } from 'src/business/business.entity';
 
 @Injectable()
 export class AuthService {
@@ -42,6 +44,30 @@ export class AuthService {
 
     const normalizedInput = dto.role.trim().toLowerCase();
     if (ROLES.includes(normalizedInput as RoleType)) {
+      let existingBusiness: Business | null = null;
+
+      if (dto.role === VENDOR && dto.businessName?.trim()) {
+        existingBusiness = await this.authRepo.fineOneBusiness(
+          dto.businessName,
+        );
+      }
+
+      if (
+        existingBusiness == null &&
+        dto.businessName?.trim() &&
+        dto.businessEmail?.trim() &&
+        dto.businessPhone?.trim() &&
+        dto.businessAddress?.trim()
+      ) {
+        // Create business first
+        existingBusiness = await this.authRepo.creatBusiness({
+          businessName: dto.businessName,
+          businessEmail: dto.businessEmail,
+          businessPhone: dto.businessPhone,
+          businessAddress: dto.businessAddress,
+        });
+      }
+
       const userDetails = {
         email: dto.email,
         passwordHash,
@@ -50,29 +76,11 @@ export class AuthService {
       };
       let newUser: Users;
 
-      if (
-        dto.businessName?.trim() &&
-        dto.businessEmail?.trim() &&
-        dto.businessPhone?.trim() &&
-        dto.businessAddress?.trim()
-      ) {
-        // Create business first
-        const business = await this.authRepo.creatBusiness({
-          businessName: dto.businessName,
-          businessEmail: dto.businessEmail,
-          businessPhone: dto.businessPhone,
-          businessAddress: dto.businessAddress,
-        });
-
-        // Create user with business reference
-        newUser = await this.authRepo.createUser({
-          ...userDetails,
-          business,
-        });
-      } else {
-        // Create regular user
-        newUser = await this.authRepo.createUser(userDetails);
-      }
+      // Create user with business reference
+      newUser = await this.authRepo.createUser({
+        ...userDetails,
+        business: existingBusiness,
+      });
 
       const contactDetails = await this.authRepo.createUserContact({
         users: newUser,

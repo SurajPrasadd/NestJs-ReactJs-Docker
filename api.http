@@ -45,8 +45,21 @@ Content-Type: application/json
   "password": "password123",
   "name": "buyer name",
   "role": "buyer",
-  "phone": "9876543210",
+  "phone": "9876543210"
 }
+
+### Register a admin
+POST http://localhost:5000/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "password123",
+  "name": "admin name",
+  "role": "admin",
+  "phone": "9876543210"
+}
+
 
 ### Login vendor
 POST http://localhost:5000/auth/login
@@ -76,10 +89,21 @@ Content-Type: application/json
   "password": "password123"
 }
 
-### Manually set the access token here after login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYTJkNGFmZi01MDVmLTRlMmUtYjdkZS01NzQwYmU4OWZkMmYiLCJpYXQiOjE3NjE2NDM4MDUsImV4cCI6MTc2MTY0NDcwNX0.qwvVJYq042RE1AW0PrOsg2q0g_KkiXsMFaZ-eVVZ__U
+### Login admin
+POST http://localhost:5000/auth/login
+Content-Type: application/json
 
-@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhYTJkNGFmZi01MDVmLTRlMmUtYjdkZS01NzQwYmU4OWZkMmYiLCJpYXQiOjE3NjE2NDM4MDUsImV4cCI6MTc2MjI0ODYwNX0.Ou96RkGdecC51tNOyjn-wHSbSQQ9toXHYcAe5X-0hQQ
+{
+  "email": "admin@example.com",
+  "password": "password123"
+}
+
+
+### Manually set the access token here after login
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmOTJjYmVlMi1iMmVkLTQyMTYtYTE5Mi1mNDAwMWY2NGU2ZjQiLCJpYXQiOjE3NjIwNTU2NDMsImV4cCI6MTc2MjA1NjU0M30._DJODYMRoavIg5E16koaFqaYX6z0800bqFDykyuhXN4
+
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJmOTJjYmVlMi1iMmVkLTQyMTYtYTE5Mi1mNDAwMWY2NGU2ZjQiLCJpYXQiOjE3NjIwNTU2NDMsImV4cCI6MTc2MjY2MDQ0M30.ieuF9ZPzN6VI4EfVgMEUdzaMEs1y_9KESsEUdgQx890
+
 ### Refresh Token
 POST http://localhost:5000/auth/refresh
 Content-Type: application/json
@@ -88,8 +112,42 @@ Content-Type: application/json
   "refreshToken": "{{refreshToken}}"
 }
 
+###  Fetch all categories with parent and children
+GET http://localhost:5000/product/getAllCategories
+Content-Type: application/json
 
-### All Users - Admin
-GET http://localhost:5000/users/getAllUser
+###  Categories delete
+DELETE http://localhost:5000/product/7
+Authorization: Bearer {{token}}
+
+### Create Categories
+POST http://localhost:5000/product/createCategories
 Content-Type: application/json
 Authorization: Bearer {{token}}
+
+{
+  "name": "Electronics",
+  "parentId": null,
+  "isActive": true
+}
+
+### Update Categories
+POST http://localhost:5000/product/updateCategories/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Electronics",
+  "parentId": null,
+  "isActive": false
+}
+
+### Update Categories
+POST http://localhost:5000/product/getParentCategories
+Content-Type: application/json
+
+{
+  "search": "",
+  "page": 1,
+  "limit": 10
+}

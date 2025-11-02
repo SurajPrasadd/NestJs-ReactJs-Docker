@@ -20,19 +20,7 @@ export class AuthController {
   @Post('register')
   async register(@Body() dto: RegisterDto) {
     try {
-      if (dto.role === VENDOR) {
-        if (
-          !dto.businessName?.trim() ||
-          !dto.businessEmail?.trim() ||
-          !dto.businessPhone?.trim() ||
-          !dto.businessAddress?.trim()
-        ) {
-          return ResponseUtil.error(
-            MESSAGES.USER.INVALID_BUSINESS,
-            RESPONSE_CODE.BAD_REQUEST,
-          );
-        }
-      } else if (dto.role === APPROVER) {
+      if (dto.role === APPROVER) {
         if (!dto.designation?.trim() || !dto.department?.trim()) {
           return ResponseUtil.error(
             MESSAGES.USER.INVALID_APPROVER,

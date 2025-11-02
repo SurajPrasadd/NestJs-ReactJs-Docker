@@ -7,7 +7,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Users } from '../users/user.entity';
-import { Catalog } from '../products/catalogs.entity';
 
 @Entity('business')
 export class Business {
@@ -38,8 +37,4 @@ export class Business {
   // One business can have many users (sellers, approvers, etc.)
   @OneToMany(() => Users, (user) => user.business)
   users: Users[];
-
-  // One business can have many catalogs
-  @OneToMany(() => Catalog, (catalog) => catalog.business)
-  catalogs: Catalog[];
 }

@@ -43,31 +43,18 @@ CREATE TABLE categories (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
--- CATALOG TABLE
-CREATE TABLE catalogs (
-  id SERIAL PRIMARY KEY,
-  business_id INT REFERENCES business(id) ON DELETE CASCADE,
-  name VARCHAR(100) NOT NULL,
-  description TEXT,
-  is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
 -- PRODUCT TABLE
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
-  catalog_id INT REFERENCES catalogs(id) ON DELETE CASCADE,
   category_id INT REFERENCES categories(id) ON DELETE SET NULL,
   business_id INT REFERENCES business(id) ON DELETE CASCADE,
   name VARCHAR(150) NOT NULL,
   sku VARCHAR(100) UNIQUE NOT NULL,
   description TEXT,
+  product_image TEXT,
   price NUMERIC(12,2) NOT NULL,
   currency VARCHAR(10) DEFAULT 'Rs',
   min_quantity  INT,
-  max_quantity  INT,
-  total_quantity  INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   is_active BOOLEAN DEFAULT TRUE,
@@ -94,7 +81,7 @@ CREATE TABLE contracts (
   terms TEXT,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CART ITEMS TABLE
@@ -115,7 +102,7 @@ CREATE TABLE order_history (
   buyer_id INT REFERENCES users(id) ON DELETE SET NULL,
   business_id INT REFERENCES business(id) ON DELETE SET NULL,
   total_amount NUMERIC(12,2),
-   is_active BOOLEAN DEFAULT TRUE,
+  is_active BOOLEAN DEFAULT TRUE,
   order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   status INT  -- 'Order submission','Order approval','Payment processing','Shipping','Delivered'

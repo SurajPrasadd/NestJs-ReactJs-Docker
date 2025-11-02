@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,6 +10,7 @@ import { ContractModule } from './contracts/contracts.module';
 import { OrderModule } from './order/order.module';
 import { ProductModule } from './products/product.module';
 import { BusinessModule } from './business/business.module';
+import { SequenceFixService } from './common/utils/fix-sequences.util';
 
 @Module({
   imports: [
@@ -34,6 +35,13 @@ import { BusinessModule } from './business/business.module';
     BusinessModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SequenceFixService],
 })
-export class AppModule {}
+export class AppModule implements OnApplicationBootstrap {
+  constructor(private readonly seqFixService: SequenceFixService) {}
+
+  async onApplicationBootstrap() {
+    // Automatically fix sequences on startup
+    await this.seqFixService.fixSequences();
+  }
+}

@@ -84,22 +84,6 @@ INSERT INTO categories (id, name, is_active, created_at) VALUES
 (11, 'IT Hardware', TRUE, CURRENT_TIMESTAMP),
 (12, 'Cleaning', TRUE, CURRENT_TIMESTAMP);
 
--- catalogs
-INSERT INTO catalogs (id, business_id, name, description, is_active, created_at) VALUES
-(1, 1, 'ElectroCart', 'Latest electronic gadgets', TRUE, CURRENT_TIMESTAMP),
-(2, 2, 'OfficeMart', 'Quality office supplies', TRUE, CURRENT_TIMESTAMP),
-(3, 3, 'GroceryBox', 'Groceries and edibles wholesale', TRUE, CURRENT_TIMESTAMP),
-(4, 4, 'HomeApplia', 'Home appliance deals', TRUE, CURRENT_TIMESTAMP),
-(5, 5, 'TextileBazaar', 'Fabric and apparel', TRUE, CURRENT_TIMESTAMP),
-(6, 6, 'FurniShop', 'Trendy furniture', TRUE, CURRENT_TIMESTAMP),
-(7, 7, 'AutoParts', 'Car and bike accessories', TRUE, CURRENT_TIMESTAMP),
-(8, 8, 'BodyCare', 'Wellness & beauty products', TRUE, CURRENT_TIMESTAMP),
-(9, 9, 'BuildPro', 'Construction essentials', TRUE, CURRENT_TIMESTAMP),
-(10, 10, 'FarmStore', 'Goods for agriculture', TRUE, CURRENT_TIMESTAMP),
-(11, 11, 'TechWorld', 'Computing devices', TRUE, CURRENT_TIMESTAMP),
-(12, 12, 'CleanAll', 'Cleaners & disinfectants', TRUE, CURRENT_TIMESTAMP);
-
-
 INSERT INTO products (id, catalog_id, category_id, business_id, name, sku, description, price, currency, min_quantity, max_quantity, total_quantity, created_at, updated_at, is_active)
 VALUES
 (1, 1, 1, 1, 'Smartphone Model A', 'SM-A-001', 'Latest 5G smartphone', 18500.00, 'Rs', 1, 5, 100, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, TRUE),
