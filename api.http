@@ -104,9 +104,9 @@ Content-Type: application/json
 
 
 ### Manually set the access token here after login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIwMTRmNjk0MC1iMDllLTQ4ZTgtYmVlOC1lZTYyNDRjOTM5YmUiLCJpYXQiOjE3NjIyNTU5NTAsImV4cCI6MTc2MjI1Njg1MH0.TmVeoTBqdgPwgYe1T7f3jGhIf6wsmYG4niFx5kqzWHA
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjOTNhY2I1MC0wMWE4LTRmNWEtOTdmMS1mNGZiZWQ3Mjk0MDUiLCJpYXQiOjE3NjIyODI5NDEsImV4cCI6MTc2MjI4Mzg0MX0.nAzjVlnqw40l0TWmh_yPmZg08G2xB8VlCE-m_fyfats
 
-@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyYzFmMGE4My1jMmIyLTRlNjEtOTI5Ni1kZTQ1NjE2OWQ1ODkiLCJpYXQiOjE3NjIxNDE3NTEsImV4cCI6MTc2Mjc0NjU1MX0.m8HKniFysuwk7vsZawyGeBQeolA7O7CMF6CW_3Jq-xc
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjOTNhY2I1MC0wMWE4LTRmNWEtOTdmMS1mNGZiZWQ3Mjk0MDUiLCJpYXQiOjE3NjIyODI5NDEsImV4cCI6MTc2Mjg4Nzc0MX0.pMb7sEr2TJ-76omAPG8mxnSGF0etAwN_VpvpUXIgw3w
 
 ### Refresh Token
 POST {{baseURL}}/auth/refresh
@@ -116,44 +116,41 @@ Content-Type: application/json
   "refreshToken": "{{refreshToken}}"
 }
 
-###  Fetch all categories with parent and children
-GET {{baseURL}}/product/getAllCategories
-Content-Type: application/json
-
-###  Categories delete
-DELETE {{baseURL}}/product/7
-Authorization: Bearer {{token}}
-
-### Create Categories
-POST {{baseURL}}/product/createCategories
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "name": "Electronics",
-  "parentId": null,
-  "isActive": true
-}
-
-### Update Categories
-POST {{baseURL}}/product/updateCategories/1
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "name": "Electronics",
-  "parentId": null,
-  "isActive": false
-}
 
 ### Fetch all categories
-POST {{baseURL}}/product/getCategories
+POST {{baseURL}}/categories/getCategories
 Content-Type: application/json
 
 {
   "search": "",
   "page": 1,
   "limit": 10
+}
+
+###  Categories delete
+DELETE {{baseURL}}/categories/12
+Authorization: Bearer {{token}}
+
+### Create Categories
+POST {{baseURL}}/categories/createCategories
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Construction2",
+  "parentId": null,
+  "isActive": true
+}
+
+### Update Categories
+POST {{baseURL}}/categories/updateCategories/13
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "name": "Electronics9",
+  "parentId": null,
+  "isActive": false
 }
 
 ### Create Product with Image
@@ -187,7 +184,7 @@ Content-Disposition: form-data; name="dto"
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ### Update Product by SKU
-PATCH {{baseURL}}/product/updateProduct/SKU-1762227838030
+PATCH {{baseURL}}/product/updateProduct/1
 Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
@@ -207,7 +204,11 @@ Content-Disposition: form-data; name="dto"
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ###  Product delete
-DELETE {{baseURL}}/product/deleteProduct/SKU-1762230292299
+DELETE {{baseURL}}/product/deleteProduct/1
+Authorization: Bearer {{token}}
+
+### GET Business Product by ID
+GET {{baseURL}}/product/getProductById/2
 Authorization: Bearer {{token}}
 
 ###  Fetch all Product
@@ -216,7 +217,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "search": "SKU-1762230292299",
+  "search": "",
   "page":1,
   "sortBy": "price",
   "order": "ASC"
@@ -228,16 +229,16 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "businessId": 1,
+  "businessId": 2,
   "productId": 2,
-  "price": 199.99,
+  "price": 299.99,
   "currency": "USD",
   "minQuantity": 5,
   "isActive": true
 }
 
 ### UPDATE Business Product
-PATCH {{baseURL}}/business-product/update/1
+PATCH {{baseURL}}/business-product/update/11
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -252,7 +253,7 @@ DELETE {{baseURL}}/business-product/delete/1
 Authorization: Bearer {{token}}
 
 ### GET Business Product by ID
-GET {{baseURL}}/business-product/getById/1
+GET {{baseURL}}/business-product/getById/12
 Authorization: Bearer {{token}}
 
 ### GET ALL Business Products (with pagination, filters, sorting)
@@ -264,8 +265,11 @@ Authorization: Bearer {{token}}
   "search": "",
   "page": 1,
   "limit": 10,
-  "businessId": 1,
+  "businessId": 2,
   "isActive": true,
   "sortBy": "price",
   "order": "ASC"
 }
+
+####
+SKU-1762141837409

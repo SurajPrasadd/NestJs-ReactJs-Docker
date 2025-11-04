@@ -54,10 +54,7 @@ export class BusinessProductsService {
   }
 
   // ✅ Update
-  async update(
-    id: number,
-    dto: CreateBusinessProductDto,
-  ): Promise<BusinessProduct> {
+  async update(id: number, dto: CreateBusinessProductDto) {
     const businessProduct = await this.findOne(id);
 
     if (dto.price !== undefined) businessProduct.price = dto.price;
@@ -66,7 +63,8 @@ export class BusinessProductsService {
       businessProduct.minQuantity = dto.minQuantity;
     if (dto.isActive !== undefined) businessProduct.isActive = dto.isActive;
 
-    return this.businessProductRepo.save(businessProduct);
+    this.businessProductRepo.save(businessProduct);
+    return null;
   }
 
   // ✅ Delete
@@ -83,8 +81,27 @@ export class BusinessProductsService {
       where: { id },
       relations: ['business', 'product', 'product.images'],
     });
-    if (!record) throw new NotFoundException('Business product not found');
-    return record;
+
+    // ✅ Type narrowing
+    if (!record) {
+      throw new NotFoundException('Business product not found');
+    }
+
+    // 🌐 Add backend URL prefix to image URLs
+    const backendUrl = this.config.get<string>('BACKEND_URL', '');
+    const updatedRecord: BusinessProduct = {
+      ...record,
+      product: {
+        ...record.product,
+        images:
+          record.product?.images?.map((img) => ({
+            ...img,
+            imageUrl: `${backendUrl}${img.imageUrl}`,
+          })) || [],
+      },
+    };
+
+    return updatedRecord;
   }
 
   // ✅ Get all

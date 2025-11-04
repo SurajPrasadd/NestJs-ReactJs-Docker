@@ -54,7 +54,7 @@ export class BusinessProductsController {
   async remove(@Param('id', ParseIntPipe) id: number) {
     try {
       const result = await this.businessProductService.remove(id);
-      return ResponseUtil.success(result.message, MESSAGES.DELETED);
+      return ResponseUtil.success(result.message, null);
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -92,13 +92,13 @@ export class ProductService {
   }
 
   async updateProductBySku(
-    sku: string,
+    id: number,
     dto: Partial<CreateProductDto>,
     imagePaths: string[],
   ) {
     // ✅ 1. Find product with relations
     const product = await this.productRepo.findOne({
-      where: { sku },
+      where: { id },
       relations: ['category', 'images'],
     });
 
@@ -150,13 +150,13 @@ export class ProductService {
 
     // ✅ 6. Save updated product
     await this.productRepo.save(product);
-    return `${sku} is updated successfully`;
+    return `${id} is updated successfully`;
   }
 
-  async deleteProductBySku(sku: string): Promise<{ message: string }> {
+  async deleteProductBySku(id: number): Promise<{ message: string }> {
     // ✅ 1. Find product with relations
     const product = await this.productRepo.findOne({
-      where: { sku },
+      where: { id },
       relations: ['images'],
     });
 
@@ -179,7 +179,7 @@ export class ProductService {
     await this.productRepo.delete({ id: product.id });
 
     return {
-      message: `Product with ${sku} and all related images deleted successfully`,
+      message: `Product with ${id} and all related images deleted successfully`,
     };
   }
 
@@ -209,6 +209,8 @@ export class ProductService {
         { search: `%${search}%` },
       );
     }
+
+    query.andWhere('images.isPrimary = true');
 
     // 📁 Filter by category or business
     if (categoryId) query.andWhere('category.id = :categoryId', { categoryId });
@@ -251,5 +253,40 @@ export class ProductService {
       sortBy: sortField,
       order,
     };
+  }
+
+  async findOne(id: number): Promise<Product> {
+    const query = this.productRepo
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.businessProducts', 'businessProducts')
+      .leftJoinAndSelect('businessProducts.business', 'business')
+      .where('product.id = :id', { id });
+
+    const record = await query.getOne();
+
+    // ✅ Handle not found
+    if (!record) {
+      throw new NotFoundException('Product not found');
+    }
+
+    // 🌐 Add backend URL prefix to image URLs
+    const backendUrl = this.config.get<string>('BACKEND_URL', '');
+    const updatedRecord: Product = {
+      ...record,
+      images:
+        record.images?.map((img) => ({
+          ...img,
+          imageUrl: `${backendUrl}${img.imageUrl}`,
+        })) || [],
+      businessProducts:
+        record.businessProducts?.map((bp) => ({
+          ...bp,
+          business: bp.business ? { ...bp.business } : null,
+        })) || [],
+    };
+
+    return updatedRecord;
   }
 }

@@ -44,10 +44,10 @@ export class ProductController {
     }
   }
 
-  @Patch('updateProduct/:sku')
+  @Patch('updateProduct/:id')
   @UploadFiles('jpeg,jpg,png', 'products', 5) // allows up to 5 images
   async updateProduct(
-    @Param('sku') sku: string,
+    @Param('id', ParseIntPipe) id: number,
     @UploadedFiles() files: Express.Multer.File[],
     @Body('dto') dtoString: string,
   ) {
@@ -57,7 +57,7 @@ export class ProductController {
         files?.map((file) => UPLOAD_PATH.IMAGE + file.filename) || [];
 
       const result = await this.productService.updateProductBySku(
-        sku,
+        id,
         dto,
         imagePaths,
       );
@@ -68,11 +68,11 @@ export class ProductController {
     }
   }
 
-  @Delete('deleteProduct/:sku')
-  async deleteProduct(@Param('sku') sku: string) {
+  @Delete('deleteProduct/:id')
+  async deleteProduct(@Param('id', ParseIntPipe) id: number) {
     try {
       return ResponseUtil.success(
-        (await this.productService.deleteProductBySku(sku)).message,
+        (await this.productService.deleteProductBySku(id)).message,
         null,
       );
     } catch (error: unknown) {
@@ -89,6 +89,16 @@ export class ProductController {
         MESSAGES.SUCCESS,
         await await this.productService.getProducts(dto),
       );
+    } catch (error: unknown) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
+  }
+
+  @Get('getProductById/:id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    try {
+      const result = await this.productService.findOne(id);
+      return ResponseUtil.success(MESSAGES.SUCCESS, result);
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }
