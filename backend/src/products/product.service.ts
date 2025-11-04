@@ -2,13 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateProductDto } from './dto/create-product.dto';
-import { Category } from './category.entity';
+import { Category } from '../categories/category.entity';
 import { Business } from '../business/business.entity';
 import { Product } from './products.entity';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
 import { QueryProductDto } from './dto/query-product.dto';
+import { BusinessProduct } from './businessproduct.entity';
+import { ProductImage } from './product-image.entity';
 
 @Injectable()
 export class ProductService {
@@ -19,72 +21,91 @@ export class ProductService {
     private categoryRepo: Repository<Category>,
     @InjectRepository(Business)
     private businessRepo: Repository<Business>,
+    @InjectRepository(BusinessProduct)
+    private businessProRepo: Repository<BusinessProduct>,
+    @InjectRepository(ProductImage)
+    private proImageRepo: Repository<ProductImage>,
     private readonly config: ConfigService,
   ) {}
 
-  async createProduct(
-    dto: CreateProductDto,
-    imagePath?: string,
-  ): Promise<Product> {
-    const business = await this.businessRepo.findOneBy({ id: dto.businessId });
-    if (!business) throw new Error('Business not found');
+  async createProduct(dto: CreateProductDto, imagePaths: string[]) {
+    const {
+      businessId,
+      categoryId,
+      name,
+      description,
+      price,
+      currency,
+      minQuantity,
+      isActive,
+      isPriceAva,
+    } = dto;
 
     let category: Category | null = null;
-    if (dto.categoryId) {
-      category = await this.categoryRepo.findOneBy({ id: dto.categoryId });
+    let sku = `SKU-${Date.now()}`;
+    let business: Business | null = null;
+    if (isPriceAva) {
+      business = await this.businessRepo.findOneBy({ id: businessId });
+      if (!business) throw new Error('Business not found');
     }
 
-    // Step 1: Create product without SKU
-    let product = this.productRepo.create({
-      name: dto.name,
-      description: dto.description,
-      price: dto.price,
-      currency: dto.currency || 'Rs',
-      minQuantity: dto.minQuantity || 1,
-      isActive: dto.isActive ?? true,
-      business,
+    if (categoryId) {
+      category = await this.categoryRepo.findOneBy({ id: categoryId });
+    }
+    // Step 1: Create product
+    const product = this.productRepo.create({
+      name,
+      description,
       category,
-      productImage: imagePath || null,
-      sku: 'TEMP',
-    } as Partial<Product>);
+      sku: sku,
+      isActive: isActive ?? true,
+    });
+    const savedProduct = await this.productRepo.save(product);
 
-    product = await this.productRepo.save(product);
-
-    // Step 2: Generate final SKU and save again
-    product.sku = `CA${product.id}`;
-    product = await this.productRepo.save(product);
-
-    // ✅ Step 3: Prepend backend URL to productImage if present
-    const backendUrl = this.config.get<string>('BACKEND_URL', '');
-    if (product.productImage) {
-      product.productImage = backendUrl + product.productImage;
+    // Step 2: Add images
+    if (imagePaths.length > 0) {
+      const productImages = imagePaths.map((url, index) =>
+        this.proImageRepo.create({
+          product: savedProduct,
+          imageUrl: url,
+          isPrimary: index === 0,
+        }),
+      );
+      await this.proImageRepo.save(productImages);
     }
 
-    return product;
+    if (isPriceAva) {
+      // Step 3: Link product to business
+      const businessProduct = this.businessProRepo.create({
+        business,
+        product: savedProduct,
+        price,
+        currency: currency || 'Rs',
+        minQuantity: minQuantity || 1,
+        isActive: isActive ?? true,
+      });
+
+      await this.businessProRepo.save(businessProduct);
+    }
+
+    return `${sku} is created successfully`;
   }
 
   async updateProductBySku(
     sku: string,
     dto: Partial<CreateProductDto>,
-    imagePath?: string | null,
-  ): Promise<Product> {
-    // Find product
+    imagePaths: string[],
+  ) {
+    // ✅ 1. Find product with relations
     const product = await this.productRepo.findOne({
       where: { sku },
-      relations: ['business', 'category'],
+      relations: ['category', 'images'],
     });
 
     if (!product) throw new Error('Product not found');
 
-    // ✅ Update only non-null fields
-    const updatableFields = [
-      'name',
-      'description',
-      'price',
-      'currency',
-      'minQuantity',
-      'isActive',
-    ] as const;
+    // ✅ 2. Update basic fields
+    const updatableFields = ['name', 'description', 'isActive'] as const;
 
     for (const field of updatableFields) {
       if (dto[field] !== null && dto[field] !== undefined) {
@@ -92,15 +113,7 @@ export class ProductService {
       }
     }
 
-    // ✅ Update relations if needed
-    if (dto.businessId) {
-      const business = await this.businessRepo.findOneBy({
-        id: dto.businessId,
-      });
-      if (!business) throw new Error('Business not found');
-      product.business = business;
-    }
-
+    // ✅ 3. Update category if provided
     if (dto.categoryId) {
       const category = await this.categoryRepo.findOneBy({
         id: dto.categoryId,
@@ -108,46 +121,66 @@ export class ProductService {
       product.category = category || null;
     }
 
-    // ✅ Handle image replacement
-    if (imagePath) {
-      // Delete old image if exists
-      if (product.productImage) {
-        const oldImagePath = path.join(process.cwd(), product.productImage);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
+    // ✅ 5. Handle multiple image replacement (if new images uploaded)
+    if (imagePaths && imagePaths.length > 0) {
+      // delete old images from disk + DB
+      for (const oldImage of product.images || []) {
+        try {
+          const oldPath = path.join(process.cwd(), oldImage.imageUrl);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        } catch (err) {
+          console.warn(`Failed to delete ${oldImage.imageUrl}:`, err);
         }
       }
+      await this.proImageRepo.delete({ product: { id: product.id } });
 
-      product.productImage = imagePath;
+      // save new images
+      const newImages = imagePaths.map((url, index) =>
+        this.proImageRepo.create({
+          product,
+          imageUrl: url,
+          isPrimary: index === 0,
+        }),
+      );
+      const savedImages = await this.proImageRepo.save(newImages);
+
+      // ✅ update relation manually
+      product.images = savedImages;
     }
 
-    const updated = await this.productRepo.save(product);
-
-    // ✅ Prepend backend URL to image path for response
-    const backendUrl = this.config.get<string>('BACKEND_URL', '');
-    if (updated.productImage) {
-      updated.productImage = backendUrl + updated.productImage;
-    }
-
-    return updated;
+    // ✅ 6. Save updated product
+    await this.productRepo.save(product);
+    return `${sku} is updated successfully`;
   }
 
-  async deleteProductBySku(sku: string) {
-    // Find product
-    const product = await this.productRepo.findOne({ where: { sku } });
+  async deleteProductBySku(sku: string): Promise<{ message: string }> {
+    // ✅ 1. Find product with relations
+    const product = await this.productRepo.findOne({
+      where: { sku },
+      relations: ['images'],
+    });
 
     if (!product) throw new Error('Product not found');
 
-    if (product.productImage) {
-      const oldImagePath = path.join(process.cwd(), product.productImage);
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
+    if (product.images && product.images.length > 0) {
+      // delete old images from disk + DB
+      for (const oldImage of product.images || []) {
+        try {
+          const oldPath = path.join(process.cwd(), oldImage.imageUrl);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        } catch (err) {
+          console.warn(`Failed to delete ${oldImage.imageUrl}:`, err);
+        }
       }
+      // ✅ 3. Delete all product images from DB
+      await this.proImageRepo.delete({ product: { id: product.id } });
     }
+    // ✅ 4. Delete the product itself
+    await this.productRepo.delete({ id: product.id });
 
-    await this.productRepo.delete({ sku });
-
-    return null;
+    return {
+      message: `Product with ${sku} and all related images deleted successfully`,
+    };
   }
 
   async getProducts(queryDto: QueryProductDto) {
@@ -165,17 +198,19 @@ export class ProductService {
     const query = this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
-      .leftJoinAndSelect('product.business', 'business');
+      .leftJoinAndSelect('product.images', 'images')
+      .leftJoinAndSelect('product.businessProducts', 'businessProducts')
+      .leftJoinAndSelect('businessProducts.business', 'business'); // ✅ correct relation path
 
-    // 🔍 Search
+    // 🔍 Search by name, SKU, or description
     if (search) {
       query.andWhere(
-        '(product.name LIKE :search OR product.sku LIKE :search OR product.description LIKE :search)',
+        '(product.name ILIKE :search OR product.sku ILIKE :search OR product.description ILIKE :search)',
         { search: `%${search}%` },
       );
     }
 
-    // 📁 Filters
+    // 📁 Filter by category or business
     if (categoryId) query.andWhere('category.id = :categoryId', { categoryId });
     if (businessId) query.andWhere('business.id = :businessId', { businessId });
     if (typeof isActive === 'boolean')
@@ -184,19 +219,27 @@ export class ProductService {
     // 🧾 Pagination
     query.skip((page - 1) * limit).take(limit);
 
-    // 🔽 Sorting
-    const validSortFields = ['name', 'price', 'createdAt', 'updatedAt'];
+    // 🔽 Sorting (validate sort field)
+    const validSortFields = ['name', 'createdAt', 'updatedAt'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
     query.orderBy(`product.${sortField}`, order);
 
-    // 📦 Fetch data
+    // 💰 Also order by business product price (hybrid safe approach)
+    query.addOrderBy('businessProducts.price', 'ASC');
+
+    // 📦 Execute query
     const [products, total] = await query.getManyAndCount();
 
-    // 🌐 Add image URLs efficiently
+    // 🌐 Prepend backend URL to all image URLs
     const backendUrl = this.config.get<string>('BACKEND_URL', '');
     const data = products.map((p) => ({
       ...p,
-      productImage: p.productImage ? `${backendUrl}${p.productImage}` : null,
+      images: p.images?.map((img) => `${backendUrl}${img.imageUrl}`) || [],
+      // businessProducts: p.businessProducts
+      //   ? [...p.businessProducts].sort(
+      //       (a, b) => Number(a.price) - Number(b.price),
+      //     )
+      //   : [],
     }));
 
     return {

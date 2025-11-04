@@ -1,9 +1,6 @@
 import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateProductDto {
-  @IsNumber()
-  businessId: number;
-
   @IsOptional()
   categoryId?: number;
 
@@ -13,9 +10,15 @@ export class CreateProductDto {
   @IsOptional()
   description?: string;
 
+  @IsOptional()
+  @IsNumber()
+  businessId: number;
+
+  @IsOptional()
   @IsNumber()
   price: number;
 
+  @IsOptional()
   @IsOptional()
   currency?: string;
 
@@ -24,4 +27,7 @@ export class CreateProductDto {
 
   @IsOptional()
   isActive?: boolean;
+
+  @IsOptional()
+  isPriceAva?: boolean;
 }

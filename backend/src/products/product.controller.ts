@@ -6,143 +6,63 @@ import {
   UseGuards,
   Delete,
   Param,
-  ParseIntPipe,
-  UploadedFile,
   Patch,
+  UploadedFiles,
+  ParseIntPipe,
 } from '@nestjs/common';
-import { Roles } from '../auth/guards/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { ResponseUtil } from '../common/utils/response.util';
 import { RESPONSE_CODE, UPLOAD_PATH } from '../common/constants/app.constants';
 import { Public } from '../auth/guards/public.decorator';
 import { ProductService } from './product.service';
-import { CategoriesService } from './categories.service';
-import { CreateUpdateDto } from './dto/create-update.dto';
-import { QueryCategoryDto } from './dto/query-category.dto';
 import { MESSAGES } from '../common/constants/app.constants';
-import { UploadFile } from '../common/upload-file.decorator';
 import { CreateProductDto } from './dto/create-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
+import { UploadFiles } from '../common/upload-file.decorator';
 
 @UseGuards(RolesGuard)
 @Controller('product')
 export class ProductController {
-  constructor(
-    private readonly productService: ProductService,
-    private readonly categoriesService: CategoriesService,
-  ) {}
-
-  @Public()
-  @Get('getAllCategories')
-  async getAllCategories() {
-    try {
-      return ResponseUtil.success(
-        MESSAGES.SUCCESS,
-        await this.categoriesService.getAllCategories(),
-      );
-    } catch (error: unknown) {
-      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
-    }
-  }
-
-  @Roles('admin')
-  @Delete(':id')
-  async remove(@Param('id', ParseIntPipe) id: number) {
-    try {
-      return ResponseUtil.success(
-        MESSAGES.SUCCESS,
-        await this.categoriesService.remove(id),
-      );
-    } catch (error: unknown) {
-      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
-    }
-  }
-
-  @Roles('admin')
-  @Post('createCategories')
-  async createCategories(@Body() dto: CreateUpdateDto) {
-    try {
-      return ResponseUtil.success(
-        MESSAGES.SUCCESS,
-        await this.categoriesService.create(dto),
-      );
-    } catch (error: unknown) {
-      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
-    }
-  }
-
-  @Roles('admin')
-  @Post('updateCategories/:id')
-  async updateCategories(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: CreateUpdateDto,
-  ) {
-    try {
-      return ResponseUtil.success(
-        MESSAGES.SUCCESS,
-        await this.categoriesService.update(id, dto),
-      );
-    } catch (error: unknown) {
-      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
-    }
-  }
-
-  @Public()
-  @Post('getCategories')
-  async getCategories(@Body() dto: QueryCategoryDto) {
-    try {
-      return ResponseUtil.success(
-        MESSAGES.SUCCESS,
-        await await this.categoriesService.getCategories(dto),
-      );
-    } catch (error: unknown) {
-      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
-    }
-  }
+  constructor(private readonly productService: ProductService) {}
 
   @Post('createProduct')
-  @UploadFile('jpeg,jpg,png', 'products')
+  @UploadFiles('jpeg,jpg,png', 'products', 5) // allows up to 5 images
   async createProduct(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body('dto') dtoString: string, // JSON string
   ) {
     try {
-      const dto: CreateProductDto = JSON.parse(dtoString); // manually parse
-      const imagePath = file ? UPLOAD_PATH.IMAGE + file.filename : null;
-      if (imagePath) {
-        return ResponseUtil.success(
-          MESSAGES.SUCCESS,
-          await await await this.productService.createProduct(dto, imagePath),
-        );
-      } else {
-        return ResponseUtil.handleError(
-          'Upload Fail',
-          RESPONSE_CODE.INTERNAL_ERROR,
-        );
-      }
+      const dto: CreateProductDto = JSON.parse(dtoString);
+      const imagePaths =
+        files?.map((file) => UPLOAD_PATH.IMAGE + file.filename) || [];
+      return ResponseUtil.success(
+        await await await this.productService.createProduct(dto, imagePaths),
+        null,
+      );
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }
   }
 
   @Patch('updateProduct/:sku')
-  @UploadFile('jpeg,jpg,png', 'products')
+  @UploadFiles('jpeg,jpg,png', 'products', 5) // allows up to 5 images
   async updateProduct(
     @Param('sku') sku: string,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
     @Body('dto') dtoString: string,
   ) {
     try {
       const dto: Partial<CreateProductDto> = JSON.parse(dtoString);
-      const imagePath = file ? UPLOAD_PATH.IMAGE + file.filename : null;
+      const imagePaths =
+        files?.map((file) => UPLOAD_PATH.IMAGE + file.filename) || [];
 
       const result = await this.productService.updateProductBySku(
         sku,
         dto,
-        imagePath,
+        imagePaths,
       );
 
-      return ResponseUtil.success(MESSAGES.SUCCESS, result);
+      return ResponseUtil.success(result, null);
     } catch (error) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }
@@ -152,8 +72,8 @@ export class ProductController {
   async deleteProduct(@Param('sku') sku: string) {
     try {
       return ResponseUtil.success(
-        MESSAGES.SUCCESS,
-        await this.productService.deleteProductBySku(sku),
+        (await this.productService.deleteProductBySku(sku)).message,
+        null,
       );
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);

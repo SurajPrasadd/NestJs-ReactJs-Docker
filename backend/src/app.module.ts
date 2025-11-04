@@ -13,6 +13,7 @@ import { BusinessModule } from './business/business.module';
 import { SequenceFixService } from './common/utils/fix-sequences.util';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { join } from 'path';
     }),
     UsersModule,
     AuthModule,
+    CategoriesModule,
     CartModule,
     ContractModule,
     OrderModule,

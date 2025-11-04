@@ -6,24 +6,21 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
-import { Category } from './category.entity';
+import { Category } from '../categories/category.entity';
 import { Business } from '../business/business.entity';
+import { ProductImage } from './product-image.entity';
+import { BusinessProduct } from './businessproduct.entity';
 
 @Entity('products')
 export class Product {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Relation: Many products belong to one category
   @ManyToOne(() => Category, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'category_id' })
   category: Category | null;
-
-  // Relation: Many products belong to one business
-  @ManyToOne(() => Business, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'business_id' })
-  business: Business;
 
   @Column({ length: 150 })
   name: string;
@@ -34,17 +31,14 @@ export class Product {
   @Column({ type: 'text', nullable: true })
   description: string;
 
-  @Column({ name: 'product_image', length: 150, nullable: true })
-  productImage: string;
+  // 👇 One product can have many images
+  @OneToMany(() => ProductImage, (image) => image.product, {
+    cascade: true,
+  })
+  images: ProductImage[];
 
-  @Column({ type: 'numeric', precision: 12, scale: 2 })
-  price: number;
-
-  @Column({ length: 10, default: 'Rs' })
-  currency: string;
-
-  @Column({ name: 'min_quantity', type: 'int', nullable: true })
-  minQuantity: number;
+  @OneToMany(() => BusinessProduct, (bp) => bp.product)
+  businessProducts: BusinessProduct[];
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;

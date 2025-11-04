@@ -11,7 +11,7 @@ services:
       - "5432:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
-      
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
@@ -30,7 +30,7 @@ services:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - "5000:3000"
+      - "5000:5000"
     env_file:
       - .env
     environment:

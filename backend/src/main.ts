@@ -12,7 +12,7 @@ async function bootstrap() {
 
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  await app.listen(3000);
+  await app.listen(5000);
   console.log('🚀 Backend running on http://localhost:5000');
 }
 bootstrap();

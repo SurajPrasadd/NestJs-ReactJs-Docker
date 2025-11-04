@@ -1,0 +1,105 @@
+  // ✅ 4. Update business-related info (in `business_products` table)
+    if (dto.businessId) {
+      const business = await this.businessRepo.findOneBy({
+        id: dto.businessId,
+      });
+      if (!business) throw new Error('Business not found');
+
+      const businessProduct = await this.businessProRepo.findOne({
+        where: {
+          product: { id: product.id },
+          business: { id: dto.businessId },
+        },
+      });
+
+      if (businessProduct) {
+        if (dto.price !== undefined) businessProduct.price = dto.price;
+        if (dto.currency !== undefined) businessProduct.currency = dto.currency;
+        if (dto.minQuantity !== undefined)
+          businessProduct.minQuantity = dto.minQuantity;
+        if (dto.isActive !== undefined) businessProduct.isActive = dto.isActive;
+
+        await this.businessProRepo.save(businessProduct);
+      }
+    }
+
+
+
+    
+    // ✅ 4. Delete product-business relations
+    await this.businessProRepo.delete({ product: { id: product.id } });
+
+
+@Entity('purchase_requests')
+export class PurchaseRequest {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => Users, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'requested_by' })
+  requestedBy: Users;
+
+  @ManyToOne(() => Product, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'product_id' })
+  product: Product;
+
+  @Column({ length: 50, unique: true })
+  prNumber: string;
+
+  @Column({ type: 'text', nullable: true })
+  remarks: string;
+
+  @Column({ type: 'int', default: 1 })
+  quantity: number;
+
+  @Column({ type: 'numeric', precision: 12, scale: 2, nullable: true })
+  price: number;
+
+  // PR overall status derived from items (e.g., if all approved = APPROVED)
+  @Column({ default: 'PENDING' })
+  status: string; // PENDING | PARTIALLY_APPROVED | APPROVED | REJECTED
+
+  @OneToMany(() => Approval, (approval) => approval.prItem, {
+    cascade: true,
+  })
+  approvals: Approval[];
+
+  @Column({ name: 'is_active', default: true })
+  isActive: boolean;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
+  updatedAt: Date;
+}
+
+@Entity('approvals')
+export class Approval {
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  // Product-level approval
+  @ManyToOne(() => PurchaseRequest, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'pr_id' })
+  prId: PurchaseRequest;
+
+  @ManyToOne(() => Users, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'approved_by' })
+  approvedBy: Users;
+
+  @Column({ default: 'PENDING' })
+  status: string; // PENDING | APPROVED | REJECTED
+
+  @Column({ type: 'text', nullable: true })
+  comments: string;
+
+  @Column({ name: 'is_active', default: true })
+  isActive: boolean;
+
+  @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamp with time zone' })
+  updatedAt: Date;
+}
