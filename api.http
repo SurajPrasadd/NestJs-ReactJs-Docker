@@ -104,9 +104,9 @@ Content-Type: application/json
 
 
 ### Manually set the access token here after login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjOTNhY2I1MC0wMWE4LTRmNWEtOTdmMS1mNGZiZWQ3Mjk0MDUiLCJpYXQiOjE3NjIyODI5NDEsImV4cCI6MTc2MjI4Mzg0MX0.nAzjVlnqw40l0TWmh_yPmZg08G2xB8VlCE-m_fyfats
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMzNkNjBmOC00N2EzLTQ4MWQtYTBkZC01MWZiZjEzNmU3MTMiLCJpYXQiOjE3NjIyODYxNTAsImV4cCI6MTc2MjI4NzA1MH0.GxHJzGc-jpS2bt7dtb1MiEi_K05AOdBd6McCXC0NArs
 
-@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjOTNhY2I1MC0wMWE4LTRmNWEtOTdmMS1mNGZiZWQ3Mjk0MDUiLCJpYXQiOjE3NjIyODI5NDEsImV4cCI6MTc2Mjg4Nzc0MX0.pMb7sEr2TJ-76omAPG8mxnSGF0etAwN_VpvpUXIgw3w
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNTU0YjRhZC04N2QxLTQ2YzYtYjJhYy04ODM1ZjU5ZjUwNDMiLCJpYXQiOjE3NjIyODUxNzMsImV4cCI6MTc2Mjg4OTk3M30.yjpNEjxIThU6BDT853Z1jjZAjd2EVgPWG1rbH1DR4QA
 
 ### Refresh Token
 POST {{baseURL}}/auth/refresh
@@ -271,5 +271,37 @@ Authorization: Bearer {{token}}
   "order": "ASC"
 }
 
-####
-SKU-1762141837409
+### Add to Cart
+POST {{baseURL}}/cart/addToCart
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "bpId": 12,
+  "quantity": 2
+}
+
+### Get User Cart (with pagination)
+POST {{baseURL}}/cart/getUserCart
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "page": 1,
+  "limit": 10
+}
+
+### Remove Item from Cart
+DELETE {{baseURL}}/cart/deleteFromCart/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+### Update Item from Cart
+POST {{baseURL}}/cart/addToCart
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "bpId": 12,
+  "quantity": 1
+}

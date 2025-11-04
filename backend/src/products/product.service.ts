@@ -232,20 +232,17 @@ export class ProductService {
     // 📦 Execute query
     const [products, total] = await query.getManyAndCount();
 
-    // 🌐 Prepend backend URL to all image URLs
-    const backendUrl = this.config.get<string>('BACKEND_URL', '');
-    const data = products.map((p) => ({
-      ...p,
-      images: p.images?.map((img) => `${backendUrl}${img.imageUrl}`) || [],
-      // businessProducts: p.businessProducts
-      //   ? [...p.businessProducts].sort(
-      //       (a, b) => Number(a.price) - Number(b.price),
-      //     )
-      //   : [],
-    }));
+    // const data = products.map((p) => ({
+    //   ...p,
+    //   businessProducts: p.businessProducts
+    //     ? [...p.businessProducts].sort(
+    //         (a, b) => Number(a.price) - Number(b.price),
+    //       )
+    //     : [],
+    // }));
 
     return {
-      data,
+      products,
       total,
       page,
       limit,
@@ -270,23 +267,6 @@ export class ProductService {
     if (!record) {
       throw new NotFoundException('Product not found');
     }
-
-    // 🌐 Add backend URL prefix to image URLs
-    const backendUrl = this.config.get<string>('BACKEND_URL', '');
-    const updatedRecord: Product = {
-      ...record,
-      images:
-        record.images?.map((img) => ({
-          ...img,
-          imageUrl: `${backendUrl}${img.imageUrl}`,
-        })) || [],
-      businessProducts:
-        record.businessProducts?.map((bp) => ({
-          ...bp,
-          business: bp.business ? { ...bp.business } : null,
-        })) || [],
-    };
-
-    return updatedRecord;
+    return record;
   }
 }

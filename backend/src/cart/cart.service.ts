@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CartItem } from './cart-item.entity';
 import { Users } from '../users/user.entity';
-import { Product } from '../products/products.entity';
+import { BusinessProduct } from '../products/businessproduct.entity';
 import { AddToCartDto } from './dto/add-to-cart.dto';
 
 @Injectable()
@@ -11,46 +11,54 @@ export class CartService {
   constructor(
     @InjectRepository(CartItem)
     private readonly cartRepo: Repository<CartItem>,
-    @InjectRepository(Product)
-    private readonly productRepo: Repository<Product>,
+
+    @InjectRepository(BusinessProduct)
+    private readonly bpRepo: Repository<BusinessProduct>,
   ) {}
 
+  // ✅ Add item to user's cart
   async addToCart(user: Users, dto: AddToCartDto): Promise<CartItem> {
-    const { productId, quantity } = dto;
+    const { bpId, quantity } = dto;
 
-    const product = await this.productRepo.findOne({
-      where: { id: productId },
+    const businessProduct = await this.bpRepo.findOne({
+      where: { id: bpId },
+      relations: ['product', 'business'],
     });
-    if (!product) throw new NotFoundException('Product not found');
+    if (!businessProduct)
+      throw new NotFoundException('Business product not found');
 
-    // Check if product already exists in user's cart
+    // ✅ Check if businessProduct already exists in user's cart
     let cartItem = await this.cartRepo.findOne({
       where: {
         users: { id: user.id },
-        product: { id: product.id },
+        businessProduct: { id: businessProduct.id },
       },
-      relations: ['product', 'users'],
+      relations: ['businessProduct', 'users'],
     });
 
     if (cartItem) {
-      // Increase quantity if already in cart
-      cartItem.quantity += quantity ?? 1;
+      cartItem.quantity = quantity ?? 1;
     } else {
-      // Otherwise create a new cart item
       cartItem = this.cartRepo.create({
         users: user,
-        product,
+        businessProduct,
         quantity: quantity ?? 1,
+        contractProd: false,
       });
     }
 
     return await this.cartRepo.save(cartItem);
   }
 
+  // ✅ Get all cart items for a user (paginated)
   async getUserCart(userId: number, page = 1, limit = 10) {
     const [items, total] = await this.cartRepo.findAndCount({
       where: { users: { id: userId } },
-      relations: ['product'],
+      relations: [
+        'businessProduct',
+        'businessProduct.product',
+        'businessProduct.product.images',
+      ],
       order: { createdAt: 'DESC' },
       skip: (page - 1) * limit,
       take: limit,
@@ -65,10 +73,8 @@ export class CartService {
     };
   }
 
-  async removeFromCart(userId: number, productId: number) {
-    return this.cartRepo.delete({
-      users: { id: userId },
-      product: { id: productId },
-    });
+  // ✅ Remove item from user's cart
+  async removeFromCart(id: number) {
+    return this.cartRepo.delete({ id });
   }
 }

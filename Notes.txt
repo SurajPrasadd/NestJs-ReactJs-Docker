@@ -40,3 +40,17 @@ SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 # Build and remove storage
 docker compose down -v
 
+
+const backendUrl = this.config.get<string>('BACKEND_URL', '');
+    const updatedRecord: BusinessProduct = {
+      ...record,
+      product: {
+        ...record.product,
+        images:
+          record.product?.images?.map((img) => ({
+            ...img,
+            imageUrl: `${backendUrl}${img.imageUrl}`,
+          })) || [],
+      },
+    };
+

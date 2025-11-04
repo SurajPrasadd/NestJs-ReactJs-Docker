@@ -87,21 +87,7 @@ export class BusinessProductsService {
       throw new NotFoundException('Business product not found');
     }
 
-    // 🌐 Add backend URL prefix to image URLs
-    const backendUrl = this.config.get<string>('BACKEND_URL', '');
-    const updatedRecord: BusinessProduct = {
-      ...record,
-      product: {
-        ...record.product,
-        images:
-          record.product?.images?.map((img) => ({
-            ...img,
-            imageUrl: `${backendUrl}${img.imageUrl}`,
-          })) || [],
-      },
-    };
-
-    return updatedRecord;
+    return record;
   }
 
   // ✅ Get all
@@ -162,20 +148,8 @@ export class BusinessProductsService {
     // 📦 Execute query
     const [records, total] = await query.getManyAndCount();
 
-    // 🌐 Add backend URL prefix to image URLs
-    const backendUrl = this.config.get<string>('BACKEND_URL', '');
-    const data = records.map((bp) => ({
-      ...bp,
-      product: {
-        ...bp.product,
-        images:
-          bp.product?.images?.map((img) => `${backendUrl}${img.imageUrl}`) ||
-          [],
-      },
-    }));
-
     return {
-      data,
+      records,
       total,
       page,
       limit,

@@ -7,6 +7,7 @@ import {
   Get,
   Delete,
   Param,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CartService } from './cart.service';
@@ -25,7 +26,7 @@ export class CartController {
     try {
       const user = req.user; // from JWT guard
       const cartItem = await this.cartService.addToCart(user, dto);
-      return ResponseUtil.success(MESSAGES.SUCCESS, cartItem);
+      return ResponseUtil.success(MESSAGES.SUCCESS, null);
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }
@@ -43,11 +44,10 @@ export class CartController {
     }
   }
 
-  @Delete('deleteFromCart:productId')
-  async removeItem(@Req() req, @Param('productId') productId: number) {
+  @Delete('deleteFromCart/:id')
+  async removeItem(@Param('id', ParseIntPipe) id: number) {
     try {
-      const user = req.user;
-      await this.cartService.removeFromCart(user.id, productId);
+      await this.cartService.removeFromCart(id);
       return ResponseUtil.success(MESSAGES.SUCCESS, null);
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);

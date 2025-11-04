@@ -1,5 +1,4 @@
 import { Users } from '../users/user.entity';
-import { Product } from '../products/products.entity';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -9,6 +8,7 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { BusinessProduct } from '../products/businessproduct.entity';
 
 @Entity('cart_items')
 export class CartItem {
@@ -16,9 +16,9 @@ export class CartItem {
   id: number;
 
   // Each cart item refers to one product
-  @ManyToOne(() => Product, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'product_id' })
-  product: Product;
+  @ManyToOne(() => BusinessProduct, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'bp_id' })
+  businessProduct: BusinessProduct;
 
   @ManyToOne(() => Users, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'users_id' })
@@ -26,6 +26,9 @@ export class CartItem {
 
   @Column({ type: 'int', default: 1 })
   quantity: number;
+
+  @Column({ name: 'contract_prod', default: false })
+  contractProd: boolean;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;

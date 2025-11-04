@@ -81,8 +81,9 @@ CREATE TABLE business_products (
 CREATE TABLE cart_items (
   id SERIAL PRIMARY KEY,
   users_id INT REFERENCES users(id) ON DELETE SET NULL,
-  product_id INT REFERENCES products(id) ON DELETE SET NULL,
+  bp_id INT REFERENCES business_products(id) ON DELETE SET NULL,
   quantity INT DEFAULT 1,
+  contract_prod BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
