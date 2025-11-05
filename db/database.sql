@@ -4,6 +4,7 @@ CREATE TABLE users (
   email VARCHAR(100) UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   role VARCHAR(100),
+  designation VARCHAR(50),
   business_id INT REFERENCES business(id) ON DELETE SET NULL,
   is_active BOOLEAN DEFAULT TRUE,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -27,7 +28,6 @@ CREATE TABLE contacts (
   id SERIAL PRIMARY KEY,
   users_id INT REFERENCES users(id),
   phone VARCHAR(50),
-  designation VARCHAR(50),
   department VARCHAR(50),
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -84,16 +84,6 @@ CREATE TABLE cart_items (
   bp_id INT REFERENCES business_products(id) ON DELETE SET NULL,
   quantity INT DEFAULT 1,
   contract_prod BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- STOCK TABLE (per business/product)
-CREATE TABLE stock (
-  id SERIAL PRIMARY KEY,
-  product_id INT REFERENCES products(id) ON DELETE CASCADE,
-  business_id INT REFERENCES business(id) ON DELETE CASCADE,
-  quantity INT DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

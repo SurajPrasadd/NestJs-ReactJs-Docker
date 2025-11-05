@@ -104,7 +104,7 @@ Content-Type: application/json
 
 
 ### Manually set the access token here after login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMzNkNjBmOC00N2EzLTQ4MWQtYTBkZC01MWZiZjEzNmU3MTMiLCJpYXQiOjE3NjIyODYxNTAsImV4cCI6MTc2MjI4NzA1MH0.GxHJzGc-jpS2bt7dtb1MiEi_K05AOdBd6McCXC0NArs
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmU1MGQ0OS02ZWY3LTRlOWMtYTFjZi01NWUwY2I4ODc5YzAiLCJpYXQiOjE3NjIyODk1MzksImV4cCI6MTc2MjI5MDQzOX0.6plweKNbc5D6vZzjQvSc_AHK3NBaeObJ7kfPMxjt4O4
 
 @refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNTU0YjRhZC04N2QxLTQ2YzYtYjJhYy04ODM1ZjU5ZjUwNDMiLCJpYXQiOjE3NjIyODUxNzMsImV4cCI6MTc2Mjg4OTk3M30.yjpNEjxIThU6BDT853Z1jjZAjd2EVgPWG1rbH1DR4QA
 
@@ -305,3 +305,46 @@ Content-Type: application/json
   "bpId": 12,
   "quantity": 1
 }
+
+### 1️⃣ Create Approval Config
+POST {{baseURL}}/approval-config
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "userId": 14,
+  "approvalLevel": 1,
+  "minAmount": 5000,
+  "maxAmount": 10000,
+  "autoApprove": false,
+  "isActive": true
+}
+
+
+### 2️⃣ Get All Approval Configs (Paginated)
+GET {{baseURL}}/approval-config?page=1&limit=10
+Authorization: Bearer {{token}}
+
+
+### 3️⃣ Get Single Approval Config by ID
+GET {{baseURL}}/approval-config/1
+Authorization: Bearer {{token}}
+
+
+### 4️⃣ Update Approval Config
+PATCH {{baseURL}}/approval-config/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "approvalLevel": 2,
+  "minAmount": 1000,
+  "maxAmount": 10000,
+  "autoApprove": false
+}
+
+
+### 5️⃣ Delete Approval Config
+DELETE {{baseURL}}/approval-config/1
+Authorization: Bearer {{token}}
+

@@ -34,6 +34,9 @@ export class Users {
   @JoinColumn({ name: 'business_id' })
   business?: Business | null;
 
+  @Column({ length: 50, nullable: true })
+  designation: string;
+
   @OneToOne(() => Contact, (contact) => contact.users)
   contact?: Contact;
 

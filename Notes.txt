@@ -1,3 +1,8 @@
+2. approveOrReject if below level is pending mark as approved in case of approved 
+3. create a contract using purchase_requests (upload contract- cost BusinessProduct)
+4. check cart and update cost in case of contract 
+5. only send PR where contract not avalbel else order
+6. Order from contract before expire date
 
 
 Run backend :nest start --watch

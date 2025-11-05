@@ -1,32 +1,28 @@
 import {
   Entity,
   PrimaryGeneratedColumn,
-  Column,
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Business } from './business.entity';
-import { Product } from '../products/products.entity';
+import { Business } from '../business/business.entity';
+import { ApprovalConfig } from './approval-config.entity';
 
-@Entity('stock')
-export class Stock {
+@Entity('approval_config_business')
+export class ApprovalConfigBusiness {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // Each stock record belongs to one product
-  @ManyToOne(() => Product, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'product_id' })
-  product: Product;
+  @ManyToOne(() => ApprovalConfig, (config) => config.businessMappings, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'approval_config_id' })
+  approvalConfig: ApprovalConfig;
 
-  // Each stock record belongs to one business
   @ManyToOne(() => Business, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'business_id' })
   business: Business;
-
-  @Column({ type: 'int', default: 0 })
-  quantity: number;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;

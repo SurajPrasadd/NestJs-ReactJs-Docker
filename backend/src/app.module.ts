@@ -14,6 +14,9 @@ import { SequenceFixService } from './common/utils/fix-sequences.util';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { CategoriesModule } from './categories/categories.module';
+import { ApprovalModule } from './approval/approval.module';
+import { PRModule } from './pr/pr.module';
+import { ApprovalConfigModule } from './approvalconfig/approval-config.module';
 
 @Module({
   imports: [
@@ -41,6 +44,9 @@ import { CategoriesModule } from './categories/categories.module';
     OrderModule,
     ProductModule,
     BusinessModule,
+    ApprovalModule,
+    PRModule,
+    ApprovalConfigModule,
   ],
   controllers: [AppController],
   providers: [AppService, SequenceFixService],

@@ -23,9 +23,6 @@ export class Contact {
   phone: string;
 
   @Column({ length: 50, nullable: true })
-  designation: string;
-
-  @Column({ length: 50, nullable: true })
   department: string;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })

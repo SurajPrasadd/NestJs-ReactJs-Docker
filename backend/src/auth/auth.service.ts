@@ -73,6 +73,7 @@ export class AuthService {
         passwordHash,
         name: dto.name,
         role: dto.role,
+        designation: dto.designation,
       };
       let newUser: Users;
 
@@ -85,7 +86,6 @@ export class AuthService {
       const contactDetails = await this.authRepo.createUserContact({
         users: newUser,
         phone: dto.phone,
-        designation: dto.designation,
         department: dto.department,
       });
 
@@ -97,7 +97,6 @@ export class AuthService {
           ...newUser,
           contact: {
             phone: contactDetails.phone,
-            designation: contactDetails.designation,
             department: contactDetails.department,
           },
         },
