@@ -5,6 +5,7 @@ CREATE TABLE users (
   password_hash TEXT NOT NULL,
   role VARCHAR(100),
   designation VARCHAR(50),
+  group_name VARCHAR(100),
   business_id INT REFERENCES business(id) ON DELETE SET NULL,
   is_active BOOLEAN DEFAULT TRUE,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -9,20 +9,25 @@ import {
   LessThanOrEqual,
   MoreThanOrEqual,
   IsNull,
-  In,
+  Brackets,
 } from 'typeorm';
 import { Approval } from '../approval/approval.entity';
 import { CartItem } from '../cart/cart-item.entity';
 import { Users } from '../users/user.entity';
 import { PurchaseRequest } from './purchase-requests.entity';
+import { PurchaseRequestItem } from './purchase-request-item.entity';
 import { QueryPurchaseRequestDto } from './dto/query-purchase-request.dto';
-import { ApprovalConfig } from 'src/approvalconfig/approval-config.entity';
+import { ApprovalConfig } from '../approvalconfig/approval-config.entity';
+import { GROUP_APP } from '../common/constants/app.constants';
 
 @Injectable()
 export class PRService {
   constructor(
     @InjectRepository(PurchaseRequest)
     private readonly prRepo: Repository<PurchaseRequest>,
+
+    @InjectRepository(PurchaseRequestItem)
+    private readonly prItemRepo: Repository<PurchaseRequestItem>,
 
     @InjectRepository(Approval)
     private readonly approvalRepo: Repository<Approval>,
@@ -35,14 +40,17 @@ export class PRService {
   ) {}
 
   /**
-   * ✅ Create Purchase Requests for all items in a user's cart
+   * ✅ Create Purchase Request from all items in user's cart
    */
   async createPurchaseRequestsFromCart(
     user: Users,
-  ): Promise<PurchaseRequest[]> {
-    // 🛒 1. Get user's cart items
+  ): Promise<PurchaseRequest | null> {
+    // 1️⃣ Get user's cart items
     const cartItems = await this.cartRepo.find({
-      where: { users: { id: user.id } },
+      where: {
+        users: { id: user.id },
+        contract: IsNull(), // ✅ Only cart items without a contract
+      },
       relations: [
         'businessProduct',
         'businessProduct.product',
@@ -53,55 +61,69 @@ export class PRService {
     if (cartItems.length === 0)
       throw new BadRequestException('Cart is empty — nothing to submit');
 
-    let prNumber = `PR-${Date.now()}`;
+    // 2️⃣ Generate PR number + group name
+    const timestamp = Date.now();
+    const prNumber = `PR-${timestamp}`;
+    const groupName = GROUP_APP;
 
-    const createdPRs: PurchaseRequest[] = [];
+    // 3️⃣ Create PurchaseRequest header
+    let purchaseRequest = this.prRepo.create({
+      prNumber,
+      requestedBy: user,
+      groupName,
+      remarks: 'Auto-generated from cart',
+      status: 'PENDING',
+    });
+    purchaseRequest = await this.prRepo.save(purchaseRequest);
 
-    // 🔁 3. Loop through cart items and create PR entries
+    // 4️⃣ Create line items
+    const requestItems: PurchaseRequestItem[] = [];
     for (const item of cartItems) {
       const { businessProduct, quantity } = item;
       const price = Number(businessProduct.price);
       const totalAmount = price * quantity;
 
-      // Create PR entry
-      let pr = this.prRepo.create({
-        prNumber,
-        requestedBy: user,
+      const prItem = this.prItemRepo.create({
+        purchaseRequest,
         businessProduct,
         quantity,
         price,
-        remarks: `Auto-generated from cart`,
         status: 'PENDING',
       });
-      pr = await this.prRepo.save(pr);
+      await this.prItemRepo.save(prItem);
 
-      // 4️⃣ Fetch approvers based on total amount
-      const configs = await this.configRepo.find({
-        where: [
-          {
-            minAmount: LessThanOrEqual(totalAmount),
-            maxAmount: MoreThanOrEqual(totalAmount),
-            isActive: true,
-          },
-          {
-            maxAmount: IsNull(),
-            minAmount: LessThanOrEqual(totalAmount),
-            isActive: true,
-          },
-        ],
-        order: { approvalLevel: 'ASC' },
-        relations: ['user'],
-      });
+      requestItems.push(prItem);
 
-      // 🟩 If no approver config found, mark as approved
+      // 5️⃣ Approval logic for each line
+      const configs = await this.configRepo
+        .createQueryBuilder('config')
+        .leftJoinAndSelect('config.user', 'user')
+        .leftJoinAndSelect('config.businessMappings', 'map')
+        .where('config.isActive = true')
+        .andWhere(
+          new Brackets((qb) => {
+            qb.where(
+              ':totalAmount BETWEEN config.minAmount AND config.maxAmount',
+            ).orWhere(
+              ':totalAmount >= config.minAmount AND config.maxAmount IS NULL',
+            );
+          }),
+        )
+        .andWhere('map.groupName = :groupName', {
+          groupName: purchaseRequest.groupName,
+        }) // 🔹 dynamic
+        .setParameter('totalAmount', totalAmount)
+        .orderBy('config.approvalLevel', 'ASC')
+        .getMany();
+
       if (configs.length === 0) {
-        pr.status = 'APPROVED';
-        await this.prRepo.save(pr);
+        prItem.status = 'APPROVED';
+        await this.prItemRepo.save(prItem);
       } else {
         let anyPending = false;
         for (const config of configs) {
           await this.approvalRepo.save({
-            purchaseRequest: pr,
+            purchaseRequest,
             approvedBy: config.user,
             approvalLevel: config.approvalLevel,
             status: config.autoApprove ? 'APPROVED' : 'PENDING',
@@ -112,25 +134,34 @@ export class PRService {
 
           if (!config.autoApprove) anyPending = true;
         }
-        pr.status = anyPending ? 'PENDING' : 'APPROVED';
-        await this.prRepo.save(pr);
-      }
 
-      createdPRs.push(pr);
+        prItem.status = anyPending ? 'PENDING' : 'APPROVED';
+        await this.prItemRepo.save(prItem);
+      }
     }
 
-    // 🧹 5. Clear user’s cart after creating PRs
+    // 6️⃣ Update overall PR status based on items
+    const allApproved = requestItems.every((i) => i.status === 'APPROVED');
+    purchaseRequest.status = allApproved ? 'APPROVED' : 'PENDING';
+    await this.prRepo.save(purchaseRequest);
+
+    // 7️⃣ Clear user's cart
     await this.cartRepo.delete({ users: { id: user.id } });
 
-    // ✅ Return all created PRs
-    return createdPRs;
+    // 8️⃣ Return final PR with items
+    return await this.prRepo.findOne({
+      where: { id: purchaseRequest.id },
+      relations: ['items', 'requestedBy', 'items.businessProduct'],
+    });
   }
 
+  /**
+   * 🔍 Fetch all PRs (with filters)
+   */
   async findAll(queryDto: QueryPurchaseRequestDto) {
     const {
       search,
       requestedBy,
-      businessId,
       status,
       isActive,
       page = 1,
@@ -142,23 +173,21 @@ export class PRService {
     const query = this.prRepo
       .createQueryBuilder('pr')
       .leftJoinAndSelect('pr.requestedBy', 'requestedBy')
-      .leftJoinAndSelect('pr.businessProduct', 'bp')
+      .leftJoinAndSelect('pr.items', 'items')
+      .leftJoinAndSelect('items.businessProduct', 'bp')
       .leftJoinAndSelect('bp.product', 'product')
       .leftJoinAndSelect('bp.business', 'business')
       .leftJoinAndSelect('pr.approvals', 'approvals');
 
     if (search) {
       query.andWhere(
-        '(pr.prNumber ILIKE :search OR pr.remarks ILIKE :search)',
-        {
-          search: `%${search}%`,
-        },
+        '(pr.prNumber ILIKE :search OR pr.remarks ILIKE :search OR pr.groupName ILIKE :search)',
+        { search: `%${search}%` },
       );
     }
 
     if (requestedBy)
       query.andWhere('requestedBy.id = :requestedBy', { requestedBy });
-    if (businessId) query.andWhere('business.id = :businessId', { businessId });
     if (status) query.andWhere('pr.status = :status', { status });
     if (typeof isActive === 'boolean')
       query.andWhere('pr.isActive = :isActive', { isActive });
@@ -180,14 +209,18 @@ export class PRService {
     };
   }
 
+  /**
+   * 🔍 Find single PR with items + approvers
+   */
   async findOne(id: number) {
     const pr = await this.prRepo.findOne({
       where: { id },
       relations: [
         'requestedBy',
-        'businessProduct',
-        'businessProduct.business',
-        'businessProduct.product',
+        'items',
+        'items.businessProduct',
+        'items.businessProduct.business',
+        'items.businessProduct.product',
         'approvals',
       ],
     });

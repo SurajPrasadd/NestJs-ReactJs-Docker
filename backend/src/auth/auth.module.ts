@@ -12,7 +12,7 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { Business } from '../business/business.entity';
-import { Contact } from '../business/contract.entity';
+import { Contact } from '../business/contacts.entity';
 
 @Module({
   imports: [

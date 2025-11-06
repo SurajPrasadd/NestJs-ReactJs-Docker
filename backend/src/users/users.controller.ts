@@ -16,14 +16,4 @@ export class UsersController {
   findAll() {
     return this.usersService.findAll();
   }
-
-  @Roles('admin')
-  @Get('getAllUser')
-  getAllUser() {
-    try {
-      return this.usersService.findAll();
-    } catch (error: unknown) {
-      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
-    }
-  }
 }

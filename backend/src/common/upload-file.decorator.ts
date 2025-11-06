@@ -1,5 +1,5 @@
 import { applyDecorators, UseInterceptors } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { multerConfig } from './file-upload.config';
 
 export function UploadFiles(
@@ -19,19 +19,19 @@ export function UploadFiles(
   );
 }
 
-// export function UploadFile(allowed: string, folder: string) {
-//   // allowed: 'pdf' OR 'jpg,png' etc.
-//   const allowedTypes = allowed.split(',').map((t) => t.trim().toLowerCase());
+export function UploadFile(allowed: string, folder: string) {
+  // allowed: 'pdf' OR 'jpg,png' etc.
+  const allowedTypes = allowed.split(',').map((t) => t.trim().toLowerCase());
 
-//   return applyDecorators(
-//     UseInterceptors(
-//       FileInterceptor('file', {
-//         storage: multerConfig.storage(folder),
-//         fileFilter: multerConfig.fileFilter(allowedTypes),
-//       }),
-//     ),
-//   );
-// }
+  return applyDecorators(
+    UseInterceptors(
+      FileInterceptor('file', {
+        storage: multerConfig.storage(folder),
+        fileFilter: multerConfig.fileFilter(allowedTypes),
+      }),
+    ),
+  );
+}
 
 //Single File upload
 // @Post('createProduct')

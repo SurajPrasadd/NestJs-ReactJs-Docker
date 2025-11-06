@@ -2,10 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ApprovalConfig } from './approval-config.entity';
-import { Users } from '../users/user.entity';
-import { CreateApprovalConfigDto } from './dto/create-approval-config.dto';
 import { ApprovalConfigBusiness } from './approval-config-business.entity';
-import { Business } from 'src/business/business.entity';
 import { CreateApprovalConfigBusinessDto } from './dto/create-approval-config-business.dto';
 
 @Injectable()
@@ -16,9 +13,6 @@ export class ApprovalBSConfigService {
 
     @InjectRepository(ApprovalConfig)
     private readonly approvalConfigRepo: Repository<ApprovalConfig>,
-
-    @InjectRepository(Business)
-    private readonly businessRepo: Repository<Business>,
   ) {}
 
   // ✅ Create mapping
@@ -30,32 +24,18 @@ export class ApprovalBSConfigService {
     });
     if (!config) throw new NotFoundException('Approval config not found');
 
-    const business = await this.businessRepo.findOne({
-      where: { id: dto.businessId },
-    });
-    if (!business) throw new NotFoundException('Business not found');
-
     const mapping = this.approvalConfigBusinessRepo.create({
       approvalConfig: config,
-      business,
+      groupName: dto.groupName,
     });
 
     return this.approvalConfigBusinessRepo.save(mapping);
   }
 
-  // ✅ Find all mappings (with pagination)
-  async findAll(
-    page = 1,
-    limit = 10,
-  ): Promise<{
-    items: ApprovalConfigBusiness[];
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  }> {
+  // ✅ Find all
+  async findAll(page = 1, limit = 10) {
     const [items, total] = await this.approvalConfigBusinessRepo.findAndCount({
-      relations: ['approvalConfig', 'business'],
+      relations: ['approvalConfig'],
       skip: (page - 1) * limit,
       take: limit,
       order: { id: 'DESC' },
@@ -70,13 +50,12 @@ export class ApprovalBSConfigService {
     };
   }
 
-  // ✅ Find one by ID
+  // ✅ Find one
   async findOne(id: number): Promise<ApprovalConfigBusiness> {
     const mapping = await this.approvalConfigBusinessRepo.findOne({
       where: { id },
-      relations: ['approvalConfig', 'business'],
+      relations: ['approvalConfig'],
     });
-
     if (!mapping) throw new NotFoundException('Mapping not found');
     return mapping;
   }
@@ -96,12 +75,8 @@ export class ApprovalBSConfigService {
       mapping.approvalConfig = config;
     }
 
-    if (dto.businessId) {
-      const business = await this.businessRepo.findOne({
-        where: { id: dto.businessId },
-      });
-      if (!business) throw new NotFoundException('Business not found');
-      mapping.business = business;
+    if (dto.groupName) {
+      mapping.groupName = dto.groupName;
     }
 
     return this.approvalConfigBusinessRepo.save(mapping);

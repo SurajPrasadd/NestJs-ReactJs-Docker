@@ -6,6 +6,7 @@ import { Users } from '../users/user.entity';
 import { Business } from '../business/business.entity';
 import { ApprovalConfigBusiness } from './approval-config-business.entity';
 import { CreateApprovalConfigDto } from './dto/create-approval-config.dto';
+import { GROUP_APP } from '../common/constants/app.constants';
 
 @Injectable()
 export class ApprovalConfigService {
@@ -48,7 +49,7 @@ export class ApprovalConfigService {
       const mappings = businesses.map((b) =>
         this.approvalConfigBusinessRepo.create({
           approvalConfig: savedConfig,
-          business: b,
+          groupName: GROUP_APP,
         }),
       );
 
@@ -126,7 +127,7 @@ export class ApprovalConfigService {
         const newMappings = businesses.map((b) =>
           this.approvalConfigBusinessRepo.create({
             approvalConfig: updated,
-            business: b,
+            groupName: GROUP_APP,
           }),
         );
 

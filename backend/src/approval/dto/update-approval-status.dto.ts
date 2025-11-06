@@ -1,19 +1,24 @@
-// dto/update-approval-status.dto.ts
 import {
+  IsString,
   IsEnum,
   IsOptional,
-  IsString,
   IsArray,
   ArrayNotEmpty,
+  IsInt,
 } from 'class-validator';
 
 export class UpdateApprovalStatusDto {
-  @IsArray()
-  @ArrayNotEmpty()
-  approvalIds: number[];
+  @IsString()
+  prNumber: string;
 
   @IsEnum(['APPROVED', 'REJECTED'])
   status: 'APPROVED' | 'REJECTED';
+
+  @IsOptional()
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsInt({ each: true })
+  itemIds?: number[];
 
   @IsOptional()
   @IsString()

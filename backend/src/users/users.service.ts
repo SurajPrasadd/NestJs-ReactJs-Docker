@@ -13,9 +13,4 @@ export class UsersService {
   findAll() {
     return this.repo.find();
   }
-
-  create(data: Partial<Users>) {
-    const user = this.repo.create(data);
-    return this.repo.save(user);
-  }
 }

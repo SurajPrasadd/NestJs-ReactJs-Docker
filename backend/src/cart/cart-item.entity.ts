@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { BusinessProduct } from '../products/businessproduct.entity';
+import { Contract } from '../contracts/contract.entity';
 
 @Entity('cart_items')
 export class CartItem {
@@ -27,8 +28,9 @@ export class CartItem {
   @Column({ type: 'int', default: 1 })
   quantity: number;
 
-  @Column({ name: 'contract_prod', default: false })
-  contractProd: boolean;
+  @ManyToOne(() => Contract, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'contract_id' })
+  contract: Contract | null;
 
   @CreateDateColumn({ name: 'created_at', type: 'timestamp with time zone' })
   createdAt: Date;

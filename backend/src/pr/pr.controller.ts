@@ -35,11 +35,19 @@ export class PRController {
 
   @Get('findAll')
   async findAll(@Query() query: QueryPurchaseRequestDto) {
-    return this.prService.findAll(query);
+    try {
+      return this.prService.findAll(query);
+    } catch (error) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
   }
 
   @Get('findOne/:id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.prService.findOne(id);
+    try {
+      return this.prService.findOne(id);
+    } catch (error) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
   }
 }

@@ -5,7 +5,7 @@ import { Users } from '../users/user.entity';
 import { Repository } from 'typeorm';
 import { Session } from './session.entity';
 import { Business } from '../business/business.entity';
-import { Contact } from '../business/contract.entity';
+import { Contact } from '../business/contacts.entity';
 
 @Injectable()
 export class AuthRepository {

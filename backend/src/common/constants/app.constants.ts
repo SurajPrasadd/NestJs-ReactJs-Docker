@@ -29,6 +29,8 @@ export const MESSAGES = {
   },
 };
 
+export const GROUP_APP = `GROUP-1`;
+
 export const VENDOR = 'vendor';
 export const APPROVER = 'approver';
 export const ROLES = ['admin', 'vendor', 'approver', 'buyer'];
@@ -45,4 +47,5 @@ export const RESPONSE_CODE = {
 
 export const UPLOAD_PATH = {
   IMAGE: '/uploads/products/',
+  CONTRACT: '/uploads/contracts/',
 };

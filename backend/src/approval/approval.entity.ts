@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Users } from '../users/user.entity';
-import { PurchaseRequest } from 'src/pr/purchase-requests.entity';
+import { PurchaseRequest } from '../pr/purchase-requests.entity';
 
 @Entity('approvals')
 export class Approval {
@@ -35,7 +35,7 @@ export class Approval {
   status: string; // PENDING | APPROVED | REJECTED
 
   @Column({ type: 'text', nullable: true })
-  comments?: string;
+  comments?: string | null;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

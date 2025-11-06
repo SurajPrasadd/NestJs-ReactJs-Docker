@@ -1,46 +1,35 @@
-import { IsOptional, IsInt, IsString, IsBoolean } from 'class-validator';
+import { IsOptional, IsString, IsIn, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class QueryApprovalDto {
+export class GetApprovalsQueryDto {
   @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  purchaseRequestId?: number;
+  @IsString()
+  search?: string; // search by PR number or remarks
+
+  @IsOptional()
+  @IsIn(['PENDING', 'APPROVED', 'REJECTED', 'PARTIALLY_APPROVED'])
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PARTIALLY_APPROVED';
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  approvedBy?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsInt()
-  approvalLevel?: number;
+  approvedBy?: number; // optional filter by user
 
   @IsOptional()
   @IsString()
-  status?: string; // PENDING | APPROVED | REJECTED
+  sortBy?: 'createdAt' | 'status' | 'approvalLevel';
 
   @IsOptional()
-  @Type(() => Boolean)
-  @IsBoolean()
-  isActive?: boolean;
+  @IsString()
+  sortOrder?: 'ASC' | 'DESC';
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  page = 1;
+  page?: number = 1;
 
   @IsOptional()
   @Type(() => Number)
   @IsInt()
-  limit = 10;
-
-  @IsOptional()
-  @IsString()
-  sortBy = 'createdAt';
-
-  @IsOptional()
-  @IsString()
-  order: 'ASC' | 'DESC' = 'DESC';
+  limit?: number = 10;
 }

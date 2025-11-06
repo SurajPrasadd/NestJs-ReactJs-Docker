@@ -1,11 +1,12 @@
-import { IsInt, IsNotEmpty } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class CreateApprovalConfigBusinessDto {
   @IsInt()
   @IsNotEmpty()
   approvalConfigId: number;
 
-  @IsInt()
+  @IsString()
   @IsNotEmpty()
-  businessId: number;
+  @MaxLength(100)
+  groupName: string;
 }

@@ -4,20 +4,18 @@ import { ApprovalConfig } from './approval-config.entity';
 import { Users } from '../users/user.entity';
 import { ApprovalConfigService } from './approval-config.service';
 import { ApprovalConfigController } from './approval-config.controller';
-import { PurchaseRequest } from '../pr/purchase-requests.entity';
-import { Approval } from 'src/approval/approval.entity';
 import { ApprovalConfigBusiness } from './approval-config-business.entity';
 import { ApprovalBSConfigService } from './approvalbs-config.service';
 import { ApprovalBSConfigController } from './approvalbs-config.controller';
+import { Business } from '../business/business.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      ApprovalConfigBusiness,
       ApprovalConfig,
       Users,
-      PurchaseRequest,
-      Approval,
+      Business,
+      ApprovalConfigBusiness,
     ]),
   ],
   controllers: [ApprovalConfigController, ApprovalBSConfigController],

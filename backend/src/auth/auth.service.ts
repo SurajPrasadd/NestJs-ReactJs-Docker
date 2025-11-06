@@ -14,12 +14,13 @@ import {
   ROLES,
   RESPONSE_CODE,
   VENDOR,
+  GROUP_APP,
 } from '../common/constants/app.constants';
 import { ResponseUtil } from '../common/utils/response.util';
 import { Users } from 'src/users/user.entity';
 import { Session } from './session.entity';
 import { v4 as uuidv4 } from 'uuid';
-import { Business } from 'src/business/business.entity';
+import { Business } from '../business/business.entity';
 
 @Injectable()
 export class AuthService {
@@ -74,6 +75,7 @@ export class AuthService {
         name: dto.name,
         role: dto.role,
         designation: dto.designation,
+        groupName: GROUP_APP,
       };
       let newUser: Users;
 

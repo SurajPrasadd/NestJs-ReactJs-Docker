@@ -4,17 +4,12 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import {
-  Repository,
-  LessThanOrEqual,
-  MoreThanOrEqual,
-  IsNull,
-  In,
-} from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { Approval } from '../approval/approval.entity';
-import { PurchaseRequest } from 'src/pr/purchase-requests.entity';
+import { PurchaseRequest } from '../pr/purchase-requests.entity';
 import { UpdateApprovalStatusDto } from './dto/update-approval-status.dto';
-import { QueryApprovalDto } from './dto/query-approval.dto';
+import { GetApprovalsQueryDto } from './dto/query-approval.dto';
+import { PurchaseRequestItem } from '../pr/purchase-request-item.entity';
 
 @Injectable()
 export class ApprovalService {
@@ -24,144 +19,176 @@ export class ApprovalService {
 
     @InjectRepository(Approval)
     private readonly approvalRepo: Repository<Approval>,
+
+    @InjectRepository(PurchaseRequestItem)
+    private readonly prItemRepo: Repository<PurchaseRequestItem>,
   ) {}
 
-  async approveOrReject(dto: UpdateApprovalStatusDto, userId: number) {
-    const { approvalIds, status, comments } = dto;
-
-    // 🔹 Fetch all relevant approvals with PR relation
-    const approvals = await this.approvalRepo.find({
-      where: { id: In(approvalIds) },
-      relations: ['purchaseRequest', 'approvedBy'],
-    });
-
-    if (approvals.length === 0)
-      throw new NotFoundException('No approvals found for given IDs');
-
-    // 🔹 Validate ownership
-    const unauthorized = approvals.find((a) => a.approvedBy?.id !== userId);
-    if (unauthorized)
-      throw new NotFoundException(
-        'You are not authorized to approve one or more of these requests',
-      );
-
-    // 🔹 Update each approval record
-    for (const approval of approvals) {
-      approval.status = status;
-      approval.comments = comments ?? undefined;
-      await this.approvalRepo.save(approval);
-
-      // 🔹 Now recalc status of the related PR after each update
-      const relatedApprovals = await this.approvalRepo.find({
-        where: { purchaseRequest: { id: approval.purchaseRequest.id } },
-        order: { approvalLevel: 'ASC' },
-      });
-
-      const hasRejection = relatedApprovals.some(
-        (a) => a.status === 'REJECTED',
-      );
-      const allApproved = relatedApprovals.every(
-        (a) => a.status === 'APPROVED',
-      );
-
-      if (hasRejection) {
-        approval.purchaseRequest.status = 'REJECTED';
-      } else if (allApproved) {
-        approval.purchaseRequest.status = 'APPROVED';
-      } else {
-        approval.purchaseRequest.status = 'PENDING';
-      }
-
-      await this.prRepo.save(approval.purchaseRequest);
-    }
-
-    return {
-      message: `Requests ${status.toLowerCase()} successfully`,
-    };
-  }
-
-  /**
-   * Fetch all approvals with optional filters and pagination
-   */
-  async findAll(queryDto: QueryApprovalDto) {
+  async getAllApprovals(query: GetApprovalsQueryDto) {
     const {
-      purchaseRequestId,
-      approvedBy,
-      approvalLevel,
+      search,
       status,
-      isActive,
+      approvedBy,
+      sortBy = 'createdAt',
+      sortOrder = 'DESC',
       page = 1,
       limit = 10,
-      sortBy = 'createdAt',
-      order = 'DESC',
-    } = queryDto;
+    } = query;
 
-    const query = this.approvalRepo
+    const qb = this.approvalRepo
       .createQueryBuilder('approval')
-      .leftJoinAndSelect('approval.purchaseRequest', 'purchaseRequest')
-      .leftJoinAndSelect('purchaseRequest.requestedBy', 'requestedBy')
-      .leftJoinAndSelect('approval.approvedBy', 'approvedByUser');
+      .leftJoinAndSelect('approval.approvedBy', 'user')
+      .leftJoinAndSelect('approval.purchaseRequest', 'pr')
+      .leftJoinAndSelect('pr.items', 'items');
 
-    // Filters
-    if (purchaseRequestId)
-      query.andWhere('purchaseRequest.id = :purchaseRequestId', {
-        purchaseRequestId,
+    // 🔍 Search filter: PR number or remarks
+    if (search) {
+      qb.andWhere('(pr.prNumber ILIKE :search OR pr.remarks ILIKE :search)', {
+        search: `%${search}%`,
       });
+    }
 
-    if (approvedBy)
-      query.andWhere('approvedByUser.id = :approvedBy', { approvedBy });
+    // 🔹 Filter by approval status / PR status / item status
+    if (status) {
+      qb.andWhere(
+        '(approval.status = :status OR pr.status = :status OR items.status = :status)',
+        { status },
+      );
+    }
 
-    if (approvalLevel)
-      query.andWhere('approval.approvalLevel = :approvalLevel', {
-        approvalLevel,
-      });
+    // 🔹 Optional: filter by approvedBy userId
+    if (approvedBy) {
+      qb.andWhere('approval.approvedBy = :approvedBy', { approvedBy });
+    }
 
-    if (status) query.andWhere('approval.status = :status', { status });
+    qb.orderBy(`approval.${sortBy}`, sortOrder)
+      .skip((page - 1) * limit)
+      .take(limit);
 
-    if (typeof isActive === 'boolean')
-      query.andWhere('approval.isActive = :isActive', { isActive });
+    const [approvals, total] = await qb.getManyAndCount();
 
-    // Pagination
-    query.skip((page - 1) * limit).take(limit);
-
-    // Sorting
-    const validSortFields = [
-      'createdAt',
-      'updatedAt',
-      'approvalLevel',
-      'status',
-    ];
-    const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
-    query.orderBy(`approval.${sortField}`, order);
-
-    const [records, total] = await query.getManyAndCount();
+    // 🧾 Response formatting
+    const data = approvals.map((a) => ({
+      approvalId: a.id,
+      approvalLevel: a.approvalLevel,
+      approvalStatus: a.status,
+      approvedBy: a.approvedBy
+        ? {
+            id: a.approvedBy.id,
+            name: a.approvedBy.name,
+            email: a.approvedBy.email,
+          }
+        : null,
+      prNumber: a.purchaseRequest?.prNumber,
+      prStatus: a.purchaseRequest?.status,
+      remarks: a.purchaseRequest?.remarks,
+      items: a.purchaseRequest?.items || [],
+      createdAt: a.createdAt,
+    }));
 
     return {
-      data: records,
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit),
+      data,
     };
   }
 
   /**
-   * Fetch a single approval by ID (with full relations)
+   * 🔎 Fetch single approval with full details
    */
   async findOne(id: number) {
     const approval = await this.approvalRepo.findOne({
       where: { id },
-      relations: [
-        'purchaseRequest',
-        'purchaseRequest.requestedBy',
-        'purchaseRequest.businessProduct',
-        'purchaseRequest.businessProduct.product',
-        'purchaseRequest.businessProduct.business',
-        'approvedBy',
-      ],
+      relations: ['approvedBy', 'purchaseRequest', 'purchaseRequest.items'],
     });
 
     if (!approval) throw new NotFoundException('Approval not found');
-    return approval;
+
+    return {
+      ...approval,
+      groupName: approval.purchaseRequest?.groupName ?? null,
+    };
+  }
+
+  /**
+   * ✅ Approve or reject one or multiple approvals
+   */
+  async approveOrReject(dto: UpdateApprovalStatusDto, userId: number) {
+    const { prNumber, status, itemIds, comments } = dto;
+
+    // 1️⃣ Fetch PR with approvals & items
+    const pr = await this.prRepo.findOne({
+      where: { prNumber },
+      relations: ['items', 'approvals', 'approvals.approvedBy'],
+    });
+    if (!pr)
+      throw new NotFoundException(`Purchase Request not found: ${prNumber}`);
+
+    // 2️⃣ Find current user's approval record
+    const approval = pr.approvals.find(
+      (a) => a.approvedBy?.id === userId && a.isActive,
+    );
+    if (!approval)
+      throw new NotFoundException('Approval record not found for this user');
+
+    // 3️⃣ Determine which items to process
+    let itemsToProcess: PurchaseRequestItem[] = [];
+    if (itemIds?.length) {
+      itemsToProcess = pr.items.filter((i) => itemIds.includes(i.id));
+      if (itemsToProcess.length === 0)
+        throw new NotFoundException('No matching items found in PR');
+    } else {
+      itemsToProcess = pr.items;
+    }
+
+    // 4️⃣ Update item status & comments
+    for (const item of itemsToProcess) {
+      item.status = status;
+      if (comments) item.comment = comments;
+      await this.prItemRepo.save(item);
+    }
+
+    // 5️⃣ Update current approval record
+    approval.status = status;
+    approval.comments = comments ?? null;
+    await this.approvalRepo.save(approval);
+
+    // 6️⃣ If current approval is APPROVED → auto-approve lower-level pending ones
+    // if (status === 'APPROVED') {
+    //   const lowerLevelApprovals = pr.approvals.filter(
+    //     (a) =>
+    //       a.approvalLevel < approval.approvalLevel && a.status === 'PENDING',
+    //   );
+
+    //   for (const low of lowerLevelApprovals) {
+    //     low.status = 'APPROVED';
+    //     low.comments = 'Auto-approved due to higher-level approval';
+    //     await this.approvalRepo.save(low);
+    //   }
+    // }
+
+    // 7️⃣ Recalculate PR status based on all items
+    const allApproved = pr.items.every((i) => i.status === 'APPROVED');
+    const allRejected = pr.items.every((i) => i.status === 'REJECTED');
+    const someApproved = pr.items.some((i) => i.status === 'APPROVED');
+
+    if (allRejected) pr.status = 'REJECTED';
+    else if (allApproved) pr.status = 'APPROVED';
+    else if (someApproved) pr.status = 'PARTIALLY_APPROVED';
+    else pr.status = 'PENDING';
+
+    await this.prRepo.save(pr);
+
+    return {
+      message:
+        itemsToProcess.length === pr.items.length
+          ? `All items ${status.toLowerCase()} successfully`
+          : `Selected items ${status.toLowerCase()} successfully`,
+      prNumber: pr.prNumber,
+      prStatus: pr.status,
+      approvalLevel: approval.approvalLevel,
+      approvalStatus: approval.status,
+    };
   }
 }

@@ -2,18 +2,20 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PurchaseRequest } from './purchase-requests.entity';
 import { Approval } from '../approval/approval.entity';
-import { BusinessProduct } from '../products/businessproduct.entity';
 import { PRController } from './pr.controller';
 import { PRService } from './pr.service';
-import { ApprovalConfig } from 'src/approvalconfig/approval-config.entity';
+import { ApprovalConfig } from '../approvalconfig/approval-config.entity';
+import { PurchaseRequestItem } from './purchase-request-item.entity';
+import { CartItem } from '../cart/cart-item.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      PurchaseRequest,
-      Approval,
+      CartItem,
       ApprovalConfig,
-      BusinessProduct,
+      Approval,
+      PurchaseRequest,
+      PurchaseRequestItem,
     ]),
   ],
   controllers: [PRController],
