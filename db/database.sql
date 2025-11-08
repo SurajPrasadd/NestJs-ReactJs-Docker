@@ -1,10 +1,18 @@
+CREATE TABLE sessions (
+  id SERIAL PRIMARY KEY,
+  sessionid VARCHAR(255) NOT NULL,
+  userId INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  revoked BOOLEAN DEFAULT FALSE,
+  expiresAt TIMESTAMP WITH TIME ZONE,
+  refreshTokenHash TEXT
+);
+
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100),
   email VARCHAR(100) UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   role VARCHAR(100),
-  designation VARCHAR(50),
   group_name VARCHAR(100),
   business_id INT REFERENCES business(id) ON DELETE SET NULL,
   is_active BOOLEAN DEFAULT TRUE,
@@ -15,23 +23,24 @@ CREATE TABLE users (
 -- business TABLE
 CREATE TABLE business (
   id SERIAL PRIMARY KEY,
-  business_name VARCHAR(150),
+  business_name VARCHAR(150) NOT NULL,
   business_email VARCHAR(100),
   business_phone VARCHAR(50),
   business_address TEXT,
   is_active BOOLEAN DEFAULT TRUE,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CONTACTS TABLE (Business Contacts)
 CREATE TABLE contacts (
   id SERIAL PRIMARY KEY,
-  users_id INT REFERENCES users(id),
+  users_id INT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
   phone VARCHAR(50),
   department VARCHAR(50),
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  designation VARCHAR(50),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CATEGORY TABLE
@@ -40,79 +49,156 @@ CREATE TABLE categories (
   name VARCHAR(100) NOT NULL,
   parent_id INT REFERENCES categories(id) ON DELETE SET NULL,
   is_active BOOLEAN DEFAULT TRUE,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- PRODUCT TABLE
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
-  category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+  category_id INT REFERENCES categories(id) ON DELETE SET NULL,
   name VARCHAR(150) NOT NULL,
   sku VARCHAR(100) UNIQUE NOT NULL,
   description TEXT,
   is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE product_images (
   id SERIAL PRIMARY KEY,
-  product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+  product_id INT REFERENCES products(id) ON DELETE CASCADE,
   image_url VARCHAR(255) NOT NULL,
   is_primary BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE business_products (
   id SERIAL PRIMARY KEY,
-  business_id INTEGER REFERENCES business(id) ON DELETE CASCADE,
-  product_id INTEGER REFERENCES products(id) ON DELETE SET NULL,
-  price NUMERIC(12, 2) NOT NULL,
+  business_id INT REFERENCES business(id) ON DELETE CASCADE,
+  product_id INT REFERENCES products(id) ON DELETE SET NULL,
+  price NUMERIC(12,2) NOT NULL,
   currency VARCHAR(10) DEFAULT 'Rs',
   min_quantity INT DEFAULT 1,
   is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  CONSTRAINT unique_business_product UNIQUE (business_id, product_id)
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (business_id, product_id)
 );
-
 
 -- CART ITEMS TABLE
 CREATE TABLE cart_items (
   id SERIAL PRIMARY KEY,
+  bp_id INT REFERENCES business_products(id) ON DELETE SET NULL,
   users_id INT REFERENCES users(id) ON DELETE SET NULL,
+  quantity INT DEFAULT 1,
+  contract_id INT REFERENCES contracts(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- PR TABLE
+CREATE TABLE purchase_requests (
+  id SERIAL PRIMARY KEY,
+  pr_number VARCHAR(50) UNIQUE NOT NULL,
+  requested_by INT REFERENCES users(id) ON DELETE SET NULL,
+  group_name VARCHAR(100),
+  remarks TEXT,
+  status VARCHAR(50) DEFAULT 'PENDING',
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE purchase_request_items (
+  id SERIAL PRIMARY KEY,
+  purchase_request_id INT REFERENCES purchase_requests(id) ON DELETE CASCADE,
   bp_id INT REFERENCES business_products(id) ON DELETE SET NULL,
   quantity INT DEFAULT 1,
-  contract_prod BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  price NUMERIC(12,2),
+  comment TEXT,
+  status VARCHAR(30) DEFAULT 'PENDING',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Approval TABLE
+CREATE TABLE approval_config (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id) ON DELETE SET NULL,
+  approval_level INT NOT NULL,
+  min_amount NUMERIC(12,2) DEFAULT 0,
+  max_amount NUMERIC(12,2),
+  auto_approve BOOLEAN DEFAULT FALSE,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE approval_config_business (
+  id SERIAL PRIMARY KEY,
+  approval_config_id INT REFERENCES approval_config(id) ON DELETE CASCADE,
+  group_name VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE approvals (
+  id SERIAL PRIMARY KEY,
+  pr_id INT REFERENCES purchase_requests(id) ON DELETE SET NULL,
+  approved_by INT REFERENCES users(id) ON DELETE SET NULL,
+  approval_level INT NOT NULL,
+  status VARCHAR(50) DEFAULT 'PENDING',
+  comments TEXT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CONTRACT TABLE
 CREATE TABLE contracts (
   id SERIAL PRIMARY KEY,
-  buyer_id INT REFERENCES users(id) ON DELETE CASCADE,
+  pr_number TEXT,
+  buyer_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   business_id INT REFERENCES business(id) ON DELETE CASCADE,
-  contract_number VARCHAR(100) UNIQUE NOT NULL,
+  bp_id INT REFERENCES business_products(id) ON DELETE SET NULL,
+  price NUMERIC(12, 2),
   start_date DATE,
   end_date DATE,
-  terms TEXT,
+  contractslink TEXT,
   is_active BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
-
--- ORDER HISTORY TABLE
-CREATE TABLE order_history (
+-- PO TABLE
+CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
-  product_id INT REFERENCES products(id) ON DELETE CASCADE,
-  buyer_id INT REFERENCES users(id) ON DELETE SET NULL,
-  business_id INT REFERENCES business(id) ON DELETE SET NULL,
-  total_amount NUMERIC(12,2),
+  order_number VARCHAR(50) UNIQUE NOT NULL,
+  created_by INT REFERENCES users(id) ON DELETE SET NULL,
+  total_amount NUMERIC(14, 2) DEFAULT 0,
+  status VARCHAR(30) DEFAULT 'PENDING',
+  remarks TEXT,
+  delivery_address TEXT,
+  expected_delivery_date DATE,
   is_active BOOLEAN DEFAULT TRUE,
-  order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  status INT  -- 'Order submission','Order approval','Payment processing','Shipping','Delivered'
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+CREATE TABLE order_items (
+  id SERIAL PRIMARY KEY,
+  pr_number TEXT,
+  order_id INT REFERENCES orders(id) ON DELETE CASCADE,
+  bp_id INT REFERENCES business_products(id) ON DELETE SET NULL,
+  quantity INT DEFAULT 1,
+  price NUMERIC(12, 2),
+  comment TEXT,
+  status VARCHAR(30) DEFAULT 'PENDING',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+
+

@@ -74,7 +74,6 @@ export class AuthService {
         passwordHash,
         name: dto.name,
         role: dto.role,
-        designation: dto.designation,
         groupName: GROUP_APP,
       };
       let newUser: Users;
@@ -89,6 +88,7 @@ export class AuthService {
         users: newUser,
         phone: dto.phone,
         department: dto.department,
+        designation: dto.designation,
       });
 
       // Generate access token
