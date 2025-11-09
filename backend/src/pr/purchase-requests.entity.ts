@@ -17,7 +17,7 @@ export class PurchaseRequest {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 50, unique: true })
+  @Column({ name: 'pr_number', length: 50, unique: true })
   prNumber: string;
 
   @ManyToOne(() => Users, { onDelete: 'SET NULL' })

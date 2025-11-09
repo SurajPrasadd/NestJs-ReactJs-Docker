@@ -17,7 +17,7 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ length: 50, unique: true })
+  @Column({ name: 'order_number', length: 50, unique: true })
   orderNumber: string;
 
   // 🔹 User who created/placed the order
@@ -26,7 +26,13 @@ export class Order {
   createdBy: Users;
 
   // 🔹 Order total amount
-  @Column({ type: 'numeric', precision: 14, scale: 2, default: 0 })
+  @Column({
+    name: 'total_amount',
+    type: 'numeric',
+    precision: 14,
+    scale: 2,
+    default: 0,
+  })
   totalAmount: number;
 
   // 🔹 Order status
