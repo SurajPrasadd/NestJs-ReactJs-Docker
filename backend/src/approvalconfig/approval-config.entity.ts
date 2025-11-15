@@ -9,7 +9,6 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Users } from '../users/user.entity';
-import { ApprovalConfigBusiness } from './approval-config-business.entity';
 
 @Entity('approval_config')
 export class ApprovalConfig {
@@ -49,11 +48,12 @@ export class ApprovalConfig {
   @Column({ name: 'auto_approve', default: false })
   autoApprove: boolean;
 
-  // ✅ One config → many business mappings
-  @OneToMany(() => ApprovalConfigBusiness, (map) => map.approvalConfig, {
-    cascade: true,
-  })
-  businessMappings: ApprovalConfigBusiness[];
+  @Column({ name: 'group_name', type: 'varchar', length: 100, nullable: true })
+  groupName: string;
+
+  @ManyToOne(() => Users, { onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'created_by' })
+  craetedBy: Users | null;
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

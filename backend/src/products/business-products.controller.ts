@@ -29,7 +29,7 @@ export class BusinessProductsController {
   async create(@Body() dto: CreateBusinessProductDto) {
     try {
       const result = await this.businessProductService.create(dto);
-      return ResponseUtil.success(MESSAGES.SUCCESS, result);
+      return ResponseUtil.success(MESSAGES.CREATED, null);
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }

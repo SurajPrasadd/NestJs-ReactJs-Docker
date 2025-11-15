@@ -1,10 +1,4 @@
-import {
-  IsNumber,
-  IsOptional,
-  IsBoolean,
-  IsArray,
-  ArrayNotEmpty,
-} from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateApprovalConfigDto {
   @IsNumber()
@@ -25,12 +19,10 @@ export class CreateApprovalConfigDto {
   autoApprove?: boolean;
 
   @IsOptional()
+  @IsString()
+  groupName?: string;
+
+  @IsOptional()
   @IsBoolean()
   isActive?: boolean;
-
-  // ✅ New: Businesses to map this config to
-  @IsOptional()
-  @IsArray()
-  @ArrayNotEmpty()
-  businessIds?: number[];
 }

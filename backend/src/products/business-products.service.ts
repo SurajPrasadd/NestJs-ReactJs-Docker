@@ -24,9 +24,16 @@ export class BusinessProductsService {
   ) {}
 
   // ✅ Create
-  async create(dto: CreateBusinessProductDto): Promise<BusinessProduct> {
-    const { businessId, productId, price, currency, minQuantity, isActive } =
-      dto;
+  async create(dto: CreateBusinessProductDto) {
+    const {
+      businessId,
+      productId,
+      price,
+      currency,
+      minQuantity,
+      groupName,
+      isActive,
+    } = dto;
 
     const business = await this.businessRepo.findOneBy({ id: businessId });
     if (!business) throw new NotFoundException('Business not found');
@@ -48,9 +55,11 @@ export class BusinessProductsService {
       price,
       currency,
       minQuantity,
+      groupName,
       isActive,
     });
-    return this.businessProductRepo.save(businessProduct);
+    this.businessProductRepo.save(businessProduct);
+    return null;
   }
 
   // ✅ Update
@@ -62,6 +71,7 @@ export class BusinessProductsService {
     if (dto.minQuantity !== undefined)
       businessProduct.minQuantity = dto.minQuantity;
     if (dto.isActive !== undefined) businessProduct.isActive = dto.isActive;
+    if (dto.groupName !== undefined) businessProduct.groupName = dto.groupName;
 
     this.businessProductRepo.save(businessProduct);
     return null;
@@ -115,20 +125,21 @@ export class BusinessProductsService {
 
     const query = this.businessProductRepo
       .createQueryBuilder('bp')
-      .leftJoinAndSelect('bp.business', 'business')
       .leftJoinAndSelect('bp.product', 'product')
       .leftJoinAndSelect('product.images', 'images');
 
     // 🔍 Search by product name, SKU, or business name
     if (search) {
       query.andWhere(
-        '(product.name ILIKE :search OR product.sku ILIKE :search OR business.businessName ILIKE :search)',
+        '(product.name ILIKE :search OR product.sku ILIKE :search)',
         { search: `%${search}%` },
       );
     }
 
+    query.andWhere('images.isPrimary = true');
+
     // 🏢 Filter by business
-    query.andWhere('business.id = :businessId', { businessId });
+    query.andWhere('bp.business_id = :businessId', { businessId });
 
     // 📦 Filter by product
     if (productId) query.andWhere('product.id = :productId', { productId });

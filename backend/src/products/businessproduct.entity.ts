@@ -7,9 +7,11 @@ import {
   UpdateDateColumn,
   JoinColumn,
   Unique,
+  OneToMany,
 } from 'typeorm';
 import { Business } from '../business/business.entity';
 import { Product } from './products.entity';
+import { CartItem } from '../cart/cart-item.entity';
 
 @Entity('business_products')
 @Unique(['business', 'product']) // prevent duplicate entries per business
@@ -30,11 +32,17 @@ export class BusinessProduct {
   @Column({ type: 'numeric', precision: 12, scale: 2 })
   price: number;
 
-  @Column({ length: 10, default: 'Rs' })
+  @Column({ length: 10, default: 'INR' })
   currency: string;
 
   @Column({ name: 'min_quantity', type: 'int', default: 1 })
   minQuantity: number;
+
+  @Column({ name: 'group_name', length: 100, nullable: true })
+  groupName: string;
+
+  @OneToMany(() => CartItem, (cart) => cart.businessProduct)
+  cartItems: CartItem[];
 
   @Column({ name: 'is_active', default: true })
   isActive: boolean;

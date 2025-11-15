@@ -79,7 +79,7 @@ CREATE TABLE business_products (
   business_id INT REFERENCES business(id) ON DELETE CASCADE,
   product_id INT REFERENCES products(id) ON DELETE SET NULL,
   price NUMERIC(12,2) NOT NULL,
-  currency VARCHAR(10) DEFAULT 'Rs',
+  currency VARCHAR(10) DEFAULT 'INR',
   min_quantity INT DEFAULT 1,
   is_active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -172,7 +172,7 @@ CREATE TABLE contracts (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- PO TABLE
+--r PO TABLE
 CREATE TABLE orders (
   id SERIAL PRIMARY KEY,
   order_number VARCHAR(50) UNIQUE NOT NULL,

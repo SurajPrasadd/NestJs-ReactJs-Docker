@@ -13,8 +13,6 @@ import {
   MESSAGES,
   ROLES,
   RESPONSE_CODE,
-  VENDOR,
-  GROUP_APP,
 } from '../common/constants/app.constants';
 import { ResponseUtil } from '../common/utils/response.util';
 import { Users } from 'src/users/user.entity';
@@ -47,26 +45,26 @@ export class AuthService {
     if (ROLES.includes(normalizedInput as RoleType)) {
       let existingBusiness: Business | null = null;
 
-      if (dto.role === VENDOR && dto.businessName?.trim()) {
+      if (dto.businessName?.trim()) {
         existingBusiness = await this.authRepo.fineOneBusiness(
           dto.businessName,
         );
-      }
 
-      if (
-        existingBusiness == null &&
-        dto.businessName?.trim() &&
-        dto.businessEmail?.trim() &&
-        dto.businessPhone?.trim() &&
-        dto.businessAddress?.trim()
-      ) {
-        // Create business first
-        existingBusiness = await this.authRepo.creatBusiness({
-          businessName: dto.businessName,
-          businessEmail: dto.businessEmail,
-          businessPhone: dto.businessPhone,
-          businessAddress: dto.businessAddress,
-        });
+        if (
+          existingBusiness == null &&
+          dto.businessName?.trim() &&
+          dto.businessEmail?.trim() &&
+          dto.businessPhone?.trim() &&
+          dto.businessAddress?.trim()
+        ) {
+          // Create business first
+          existingBusiness = await this.authRepo.creatBusiness({
+            businessName: dto.businessName,
+            businessEmail: dto.businessEmail,
+            businessPhone: dto.businessPhone,
+            businessAddress: dto.businessAddress,
+          });
+        }
       }
 
       const userDetails = {
@@ -74,7 +72,6 @@ export class AuthService {
         passwordHash,
         name: dto.name,
         role: dto.role,
-        groupName: GROUP_APP,
       };
       let newUser: Users;
 
@@ -84,12 +81,19 @@ export class AuthService {
         business: existingBusiness,
       });
 
-      const contactDetails = await this.authRepo.createUserContact({
-        users: newUser,
-        phone: dto.phone,
-        department: dto.department,
-        designation: dto.designation,
-      });
+      if (
+        dto.phone?.trim() ||
+        dto.department?.trim() ||
+        dto.designation?.trim()
+      ) {
+        // Create business first
+        await this.authRepo.createUserContact({
+          users: newUser,
+          phone: dto.phone,
+          department: dto.department,
+          designation: dto.designation,
+        });
+      }
 
       // Generate access token
       const token = await this.createSession(newUser);
@@ -97,10 +101,6 @@ export class AuthService {
       return ResponseUtil.success(MESSAGES.USER.REGISTER_SUCCESS, {
         user: {
           ...newUser,
-          contact: {
-            phone: contactDetails.phone,
-            department: contactDetails.department,
-          },
         },
         token,
       });

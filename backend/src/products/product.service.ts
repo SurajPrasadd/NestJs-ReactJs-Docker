@@ -41,6 +41,9 @@ export class ProductService {
       isPriceAva,
     } = dto;
 
+    const productCheck = await this.productRepo.findOneBy({ name: name });
+    if (productCheck) throw new Error('Product name already exists.');
+
     let category: Category | null = null;
     let sku = `SKU-${Date.now()}`;
     let business: Business | null = null;
@@ -80,7 +83,7 @@ export class ProductService {
         business,
         product: savedProduct,
         price,
-        currency: currency || 'Rs',
+        currency: currency || 'INR',
         minQuantity: minQuantity || 1,
         isActive: isActive ?? true,
       });
@@ -183,7 +186,7 @@ export class ProductService {
     };
   }
 
-  async getProducts(queryDto: QueryProductDto) {
+  async getProducts(queryDto: QueryProductDto, userId: number) {
     const {
       search,
       page = 1,
@@ -197,10 +200,16 @@ export class ProductService {
 
     const query = this.productRepo
       .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.businessProducts', 'businessProducts')
-      .leftJoinAndSelect('businessProducts.business', 'business'); // ✅ correct relation path
+      .leftJoinAndSelect('businessProducts.business', 'business')
+      .leftJoinAndMapOne(
+        'businessProducts.cartItem',
+        'businessProducts.cartItems',
+        'cartItem',
+        'cartItem.users_id = :userId',
+        { userId },
+      ); // ✅ correct relation path
 
     // 🔍 Search by name, SKU, or description
     if (search) {
@@ -213,7 +222,8 @@ export class ProductService {
     query.andWhere('images.isPrimary = true');
 
     // 📁 Filter by category or business
-    if (categoryId) query.andWhere('category.id = :categoryId', { categoryId });
+    if (categoryId)
+      query.andWhere('product.category_id = :categoryId', { categoryId });
     if (businessId) query.andWhere('business.id = :businessId', { businessId });
     if (typeof isActive === 'boolean')
       query.andWhere('product.isActive = :isActive', { isActive });
@@ -232,15 +242,6 @@ export class ProductService {
     // 📦 Execute query
     const [products, total] = await query.getManyAndCount();
 
-    // const data = products.map((p) => ({
-    //   ...p,
-    //   businessProducts: p.businessProducts
-    //     ? [...p.businessProducts].sort(
-    //         (a, b) => Number(a.price) - Number(b.price),
-    //       )
-    //     : [],
-    // }));
-
     return {
       products,
       total,
@@ -252,14 +253,23 @@ export class ProductService {
     };
   }
 
-  async findOne(id: number): Promise<Product> {
+  async findOne(id: number, userId: number): Promise<Product> {
     const query = this.productRepo
       .createQueryBuilder('product')
       .leftJoinAndSelect('product.category', 'category')
       .leftJoinAndSelect('product.images', 'images')
       .leftJoinAndSelect('product.businessProducts', 'businessProducts')
       .leftJoinAndSelect('businessProducts.business', 'business')
+      .leftJoinAndMapOne(
+        'businessProducts.cartItem',
+        'businessProducts.cartItems',
+        'cartItem',
+        'cartItem.users_id = :userId',
+        { userId },
+      )
       .where('product.id = :id', { id });
+
+    query.addOrderBy('businessProducts.price', 'ASC');
 
     const record = await query.getOne();
 

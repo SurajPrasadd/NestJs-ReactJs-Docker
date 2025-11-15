@@ -20,14 +20,6 @@ export class AuthController {
   @Post('register')
   async register(@Body() dto: RegisterDto) {
     try {
-      if (dto.role === APPROVER) {
-        if (!dto.designation?.trim() || !dto.department?.trim()) {
-          return ResponseUtil.error(
-            MESSAGES.USER.INVALID_APPROVER,
-            RESPONSE_CODE.BAD_REQUEST,
-          );
-        }
-      }
       return await this.authService.register(dto); // await the Promise
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);

@@ -29,11 +29,16 @@ export const MESSAGES = {
   },
 };
 
-export const GROUP_APP = `GROUP-1`;
-
 export const VENDOR = 'vendor';
+export const BUYER = 'buyer';
 export const APPROVER = 'approver';
 export const ROLES = ['admin', 'vendor', 'approver', 'buyer'];
+
+export const PR_STATUS = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  PARTIALLY_APPROVED: 'PARTIALLY_APPROVED',
+};
 
 export const RESPONSE_CODE = {
   SUCCESS: 200,

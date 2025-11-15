@@ -6,9 +6,11 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { BusinessProduct } from '../products/businessproduct.entity';
 import { PurchaseRequest } from './purchase-requests.entity';
+import { Approval } from '../approval/approval.entity';
 
 @Entity('purchase_request_items')
 export class PurchaseRequestItem {
@@ -33,6 +35,11 @@ export class PurchaseRequestItem {
 
   @Column({ type: 'text', nullable: true })
   comment: string | null;
+
+  @OneToMany(() => Approval, (approval) => approval.purchaseRequestItem, {
+    cascade: true,
+  })
+  approvals: Approval[];
 
   // 🔹 New field for tracking per-item approval or progress
   @Column({ length: 30, default: 'PENDING' })

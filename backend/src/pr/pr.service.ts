@@ -18,7 +18,7 @@ import { PurchaseRequest } from './purchase-requests.entity';
 import { PurchaseRequestItem } from './purchase-request-item.entity';
 import { QueryPurchaseRequestDto } from './dto/query-purchase-request.dto';
 import { ApprovalConfig } from '../approvalconfig/approval-config.entity';
-import { GROUP_APP } from '../common/constants/app.constants';
+import { PR_STATUS } from '../common/constants/app.constants';
 
 @Injectable()
 export class PRService {
@@ -45,34 +45,43 @@ export class PRService {
   async createPurchaseRequestsFromCart(
     user: Users,
   ): Promise<PurchaseRequest | null> {
+    const today = new Date();
+
     // 1️⃣ Get user's cart items
     const cartItems = await this.cartRepo.find({
-      where: {
-        users: { id: user.id },
-        contract: IsNull(), // ✅ Only cart items without a contract
-      },
+      where: [
+        {
+          users: { id: user.id },
+          contract: IsNull(),
+        },
+        {
+          users: { id: user.id },
+          contract: {
+            endDate: MoreThanOrEqual(today),
+          },
+        },
+      ],
       relations: [
         'businessProduct',
         'businessProduct.product',
         'businessProduct.business',
+        'contract',
       ],
     });
 
     if (cartItems.length === 0)
-      throw new BadRequestException('Cart is empty — nothing to submit');
+      throw new BadRequestException('Cart is empty — nothing to submit for PR');
 
     // 2️⃣ Generate PR number + group name
     const timestamp = Date.now();
     const prNumber = `PR-${timestamp}`;
-    const groupName = GROUP_APP;
 
     // 3️⃣ Create PurchaseRequest header
     let purchaseRequest = this.prRepo.create({
       prNumber,
       requestedBy: user,
-      groupName,
       remarks: 'Auto-generated from cart',
-      status: 'PENDING',
+      status: PR_STATUS.PENDING,
     });
     purchaseRequest = await this.prRepo.save(purchaseRequest);
 
@@ -88,7 +97,7 @@ export class PRService {
         businessProduct,
         quantity,
         price,
-        status: 'PENDING',
+        status: PR_STATUS.PENDING,
       });
       await this.prItemRepo.save(prItem);
 
@@ -98,35 +107,34 @@ export class PRService {
       const configs = await this.configRepo
         .createQueryBuilder('config')
         .leftJoinAndSelect('config.user', 'user')
-        .leftJoinAndSelect('config.businessMappings', 'map')
         .where('config.isActive = true')
         .andWhere(
           new Brackets((qb) => {
             qb.where(
               ':totalAmount BETWEEN config.minAmount AND config.maxAmount',
             ).orWhere(
-              ':totalAmount >= config.minAmount AND config.maxAmount IS NULL',
+              'config.maxAmount IS NULL AND :totalAmount >= config.minAmount',
             );
           }),
         )
-        .andWhere('map.groupName = :groupName', {
-          groupName: purchaseRequest.groupName,
-        }) // 🔹 dynamic
+        .andWhere('config.groupName = :groupName', {
+          groupName: businessProduct.groupName,
+        })
         .setParameter('totalAmount', totalAmount)
         .orderBy('config.approvalLevel', 'ASC')
         .getMany();
 
       if (configs.length === 0) {
-        prItem.status = 'APPROVED';
+        prItem.status = PR_STATUS.APPROVED;
         await this.prItemRepo.save(prItem);
       } else {
         let anyPending = false;
         for (const config of configs) {
           await this.approvalRepo.save({
-            purchaseRequest,
+            prItem,
             approvedBy: config.user,
             approvalLevel: config.approvalLevel,
-            status: config.autoApprove ? 'APPROVED' : 'PENDING',
+            status: config.autoApprove ? PR_STATUS.APPROVED : PR_STATUS.PENDING,
             comments: config.autoApprove
               ? 'Auto approved as per configuration'
               : undefined,
@@ -135,15 +143,25 @@ export class PRService {
           if (!config.autoApprove) anyPending = true;
         }
 
-        prItem.status = anyPending ? 'PENDING' : 'APPROVED';
+        prItem.status = anyPending ? PR_STATUS.PENDING : PR_STATUS.APPROVED;
         await this.prItemRepo.save(prItem);
       }
     }
 
     // 6️⃣ Update overall PR status based on items
-    const allApproved = requestItems.every((i) => i.status === 'APPROVED');
-    purchaseRequest.status = allApproved ? 'APPROVED' : 'PENDING';
-    await this.prRepo.save(purchaseRequest);
+    const allApproved = requestItems.every(
+      (i) => i.status === PR_STATUS.APPROVED,
+    );
+
+    const anyApproved = requestItems.some(
+      (i) => i.status === PR_STATUS.APPROVED,
+    );
+
+    if (allApproved) {
+      purchaseRequest.status = PR_STATUS.APPROVED;
+    } else if (anyApproved) {
+      purchaseRequest.status = PR_STATUS.PARTIALLY_APPROVED;
+    }
 
     // 7️⃣ Clear user's cart
     await this.cartRepo.delete({ users: { id: user.id } });
@@ -151,7 +169,7 @@ export class PRService {
     // 8️⃣ Return final PR with items
     return await this.prRepo.findOne({
       where: { id: purchaseRequest.id },
-      relations: ['items', 'requestedBy', 'items.businessProduct'],
+      relations: ['items', 'items.approvals'],
     });
   }
 
@@ -162,6 +180,7 @@ export class PRService {
     const {
       search,
       requestedBy,
+      businessId,
       status,
       isActive,
       page = 1,
@@ -175,16 +194,17 @@ export class PRService {
       .leftJoinAndSelect('pr.requestedBy', 'requestedBy')
       .leftJoinAndSelect('pr.items', 'items')
       .leftJoinAndSelect('items.businessProduct', 'bp')
-      .leftJoinAndSelect('bp.product', 'product')
-      .leftJoinAndSelect('bp.business', 'business')
-      .leftJoinAndSelect('pr.approvals', 'approvals');
+      .leftJoinAndSelect('bp.product', 'product');
 
     if (search) {
       query.andWhere(
-        '(pr.prNumber ILIKE :search OR pr.remarks ILIKE :search OR pr.groupName ILIKE :search)',
+        '(pr.prNumber ILIKE :search OR pr.remarks ILIKE :search OR requestedBy.name ILIKE :search)',
         { search: `%${search}%` },
       );
     }
+
+    if (businessId)
+      query.andWhere('bp.business_id = :businessId', { businessId });
 
     if (requestedBy)
       query.andWhere('requestedBy.id = :requestedBy', { requestedBy });
@@ -221,7 +241,7 @@ export class PRService {
         'items.businessProduct',
         'items.businessProduct.business',
         'items.businessProduct.product',
-        'approvals',
+        'items.approvals',
       ],
     });
     if (!pr) throw new NotFoundException('Purchase Request not found');

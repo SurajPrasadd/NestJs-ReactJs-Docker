@@ -9,6 +9,7 @@ import {
   Patch,
   UploadedFiles,
   ParseIntPipe,
+  Req,
 } from '@nestjs/common';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { ResponseUtil } from '../common/utils/response.util';
@@ -80,14 +81,13 @@ export class ProductController {
     }
   }
 
-  @Public()
   @Post('getProduct')
-  async getProduct(@Body() dto: QueryProductDto) {
+  async getProduct(@Req() req, @Body() dto: QueryProductDto) {
     try {
-      console.log('Received body:', dto);
+      const userId = req.user.id;
       return ResponseUtil.success(
         MESSAGES.SUCCESS,
-        await await this.productService.getProducts(dto),
+        await await this.productService.getProducts(dto, userId),
       );
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
@@ -95,9 +95,10 @@ export class ProductController {
   }
 
   @Get('getProductById/:id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  async findOne(@Req() req, @Param('id', ParseIntPipe) id: number) {
     try {
-      const result = await this.productService.findOne(id);
+      const userId = req.user.id;
+      const result = await this.productService.findOne(id, userId);
       return ResponseUtil.success(MESSAGES.SUCCESS, result);
     } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);

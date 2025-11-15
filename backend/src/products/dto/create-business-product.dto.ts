@@ -7,6 +7,10 @@ import {
 } from 'class-validator';
 
 export class CreateBusinessProductDto {
+  @IsOptional()
+  @IsString()
+  groupName: string;
+
   @IsNumber()
   businessId: number;
 

@@ -22,7 +22,7 @@ export class AuthRepository {
   async findUserByEmail(email: string): Promise<Users | null> {
     return this.userRepo.findOne({
       where: { email, isActive: true },
-      relations: ['contact'],
+      relations: ['contact', 'business'],
     });
   }
 

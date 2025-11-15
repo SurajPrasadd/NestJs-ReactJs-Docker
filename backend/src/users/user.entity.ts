@@ -33,10 +33,6 @@ export class Users {
   @ManyToOne(() => Business, { nullable: true, onDelete: 'SET NULL' })
   @JoinColumn({ name: 'business_id' })
   business?: Business | null;
-  
-  // 🔹 New field: grouping multiple PRs logically
-  @Column({ name: 'group_name', length: 100, nullable: true })
-  groupName: string;
 
   @OneToOne(() => Contact, (contact) => contact.users)
   contact?: Contact;

@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Users } from '../users/user.entity';
-import { PurchaseRequest } from '../pr/purchase-requests.entity';
+import { PurchaseRequestItem } from '../pr/purchase-request-item.entity';
 
 @Entity('approvals')
 export class Approval {
@@ -17,11 +17,11 @@ export class Approval {
   id: number;
 
   // 👇 use a clear property name "purchaseRequest"
-  @ManyToOne(() => PurchaseRequest, (pr) => pr.approvals, {
+  @ManyToOne(() => PurchaseRequestItem, (pr) => pr.approvals, {
     onDelete: 'SET NULL',
   })
-  @JoinColumn({ name: 'pr_id' })
-  purchaseRequest: PurchaseRequest;
+  @JoinColumn({ name: 'pr_item_id' })
+  purchaseRequestItem: PurchaseRequestItem;
 
   @ManyToOne(() => Users, { onDelete: 'SET NULL' })
   @JoinColumn({ name: 'approved_by' })

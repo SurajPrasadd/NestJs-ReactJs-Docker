@@ -24,20 +24,11 @@ export class PurchaseRequest {
   @JoinColumn({ name: 'requested_by' })
   requestedBy: Users;
 
-  // 🔹 New field: grouping multiple PRs logically
-  @Column({ name: 'group_name', length: 100, nullable: true })
-  groupName: string;
-
   @Column({ type: 'text', nullable: true })
   remarks: string;
 
   @Column({ default: 'PENDING' })
   status: string; // PENDING | PARTIALLY_APPROVED | APPROVED | REJECTED
-
-  @OneToMany(() => Approval, (approval) => approval.purchaseRequest, {
-    cascade: true,
-  })
-  approvals: Approval[];
 
   @OneToMany(() => PurchaseRequestItem, (item) => item.purchaseRequest, {
     cascade: true,

@@ -33,8 +33,8 @@ export class PRController {
     }
   }
 
-  @Get('findAll')
-  async findAll(@Query() query: QueryPurchaseRequestDto) {
+  @Post('findAll')
+  async findAll(@Body() query: QueryPurchaseRequestDto) {
     try {
       return this.prService.findAll(query);
     } catch (error) {

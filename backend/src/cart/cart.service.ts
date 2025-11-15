@@ -82,18 +82,22 @@ export class CartService {
 
   // ✅ Get all cart items for a user (paginated)
   async getUserCart(userId: number, page = 1, limit = 10) {
-    const [items, total] = await this.cartRepo.findAndCount({
-      where: { users: { id: userId } },
-      relations: [
-        'contract',
-        'businessProduct',
-        'businessProduct.product',
-        'businessProduct.product.images',
-      ],
-      order: { createdAt: 'DESC' },
-      skip: (page - 1) * limit,
-      take: limit,
-    });
+    if (page == 1) {
+      await this.refreshCartContracts();
+    }
+
+    const query = this.cartRepo
+      .createQueryBuilder('cart')
+      .leftJoinAndSelect('cart.contract', 'contract')
+      .leftJoinAndSelect('cart.businessProduct', 'bp')
+      .leftJoinAndSelect('bp.product', 'product')
+      .leftJoinAndSelect('product.images', 'images', 'images.isPrimary = true') // ✅ Only primary image
+      .where('cart.users_id = :userId', { userId })
+      .orderBy('cart.createdAt', 'DESC')
+      .skip((page - 1) * limit)
+      .take(limit);
+
+    const [items, total] = await query.getManyAndCount();
 
     return {
       items,
@@ -107,5 +111,29 @@ export class CartService {
   // ✅ Remove item from user's cart
   async removeFromCart(id: number) {
     return this.cartRepo.delete({ id });
+  }
+
+  async refreshCartContracts(): Promise<number> {
+    const today = new Date();
+
+    // 1️⃣ Find all cart items where contract exists and is expired
+    const carts = await this.cartRepo.find({
+      where: {
+        contract: {
+          endDate: MoreThanOrEqual(today), // ❌ as per your requirement (>= today)
+        },
+      },
+      relations: ['contract'],
+    });
+
+    // 2️⃣ Unlink contract
+    for (const cart of carts) {
+      cart.contract = null;
+    }
+
+    // 3️⃣ Save all changes
+    await this.cartRepo.save(carts);
+
+    return carts.length; // number of cart items updated
   }
 }

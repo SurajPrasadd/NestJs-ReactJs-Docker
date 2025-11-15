@@ -92,17 +92,17 @@ export class CategoriesService {
     const { search, page, limit } = queryDto;
 
     //Featch All
-    const query = this.categoryRepo
-      .createQueryBuilder('category')
-      .orderBy('category.name', 'ASC');
-
-    //Only Child inside Parent category
     // const query = this.categoryRepo
     //   .createQueryBuilder('category')
-    //   .leftJoinAndSelect('category.children', 'children')
-    //   .orderBy('category.name', 'ASC')
-    //   .addOrderBy('children.name', 'ASC')
-    //   .where('category.parent IS NULL');
+    //   .orderBy('category.name', 'ASC');
+
+    //Only Child inside Parent category
+    const query = this.categoryRepo
+      .createQueryBuilder('category')
+      .leftJoinAndSelect('category.children', 'children')
+      .orderBy('category.name', 'ASC')
+      .addOrderBy('children.name', 'ASC')
+      .where('category.parent IS NULL');
 
     //Only Child category
     // const query = this.categoryRepo

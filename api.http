@@ -14,11 +14,8 @@ Content-Type: application/json
   "businessEmail": "sales@techsupplies.com",
   "businessPhone": "9876543210",
   "businessAddress": "Bangalore, India",
-  "phone": "9876543210",
-  "designation": "Manager",
-  "department": "IT",
 
-  "email": "vendor@example.com",
+  "email": "vendor1@example.com",
   "password": "password123",
   "name": "vendor name",
   "role": "vendor"
@@ -30,9 +27,7 @@ POST {{baseURL}}/auth/register
 Content-Type: application/json
 
 {
-  "phone": "9876543210",
-  "designation": "Manager",
-  "department": "IT",
+  "businessName": "TechSupplies Pvt Ltd",
 
   "email": "approver@example.com",
   "password": "password123",
@@ -45,11 +40,14 @@ POST {{baseURL}}/auth/register
 Content-Type: application/json
 
 {
+  "phone": "9876543210",
+  "designation": "Manager",
+  "department": "IT",
+
   "email": "buyer@example.com",
   "password": "password123",
   "name": "buyer name",
   "role": "buyer",
-  "phone": "9876543210"
 }
 
 ### Register a admin
@@ -104,9 +102,9 @@ Content-Type: application/json
 
 
 ### Manually set the access token here after login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJiZmU1MGQ0OS02ZWY3LTRlOWMtYTFjZi01NWUwY2I4ODc5YzAiLCJpYXQiOjE3NjIyODk1MzksImV4cCI6MTc2MjI5MDQzOX0.6plweKNbc5D6vZzjQvSc_AHK3NBaeObJ7kfPMxjt4O4
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMjU0MzgzMi01ZTY4LTQ5NTQtOTBmMi0wNjlhZTYzNjYxYzkiLCJpYXQiOjE3NjMyNDE5NDgsImV4cCI6MTc2MzI0Mjg0OH0.eYco5UwtAIC2vAv-G0QWoV-6RnReU4Z19WGAVcO8JZY
 
-@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzNTU0YjRhZC04N2QxLTQ2YzYtYjJhYy04ODM1ZjU5ZjUwNDMiLCJpYXQiOjE3NjIyODUxNzMsImV4cCI6MTc2Mjg4OTk3M30.yjpNEjxIThU6BDT853Z1jjZAjd2EVgPWG1rbH1DR4QA
+@refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2N2M4NjhjMC03NWQ4LTQ1NTctOTE1MS1iNjcyZjhjNDUyNjkiLCJpYXQiOjE3NjMyMjMyMjgsImV4cCI6MTc2MzgyODAyOH0.m0wChIiB0Q6ilX-Nhuumj02eN0XvImlciUoD28tsl4s
 
 ### Refresh Token
 POST {{baseURL}}/auth/refresh
@@ -143,7 +141,7 @@ Authorization: Bearer {{token}}
 }
 
 ### Update Categories
-POST {{baseURL}}/categories/updateCategories/13
+POST {{baseURL}}/categories/updateCategories/16
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -152,6 +150,28 @@ Authorization: Bearer {{token}}
   "parentId": null,
   "isActive": false
 }
+
+###  Fetch all Product
+POST {{baseURL}}/product/getProduct
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "search": "",
+  "categoryId": null,
+  "businessId" : null,
+  "isActive":true,
+  "page":1,
+  "limit":10,
+  "sortBy": "updatedAt", 
+  "order": "DESC"
+}
+ # sortBy ='name', 'createdAt', 'updatedAt'
+
+###  Fetch one Product
+GET {{baseURL}}/product/getProductById/46
+Authorization: Bearer {{token}}
+Content-Type: application/json
 
 ### Create Product with Image
 POST {{baseURL}}/product/createProduct
@@ -176,10 +196,11 @@ Content-Disposition: form-data; name="dto"
   "categoryId": 2,
   "name": "Ultra Cement",
   "description": "High quality cement",
+
+  "isPriceAva": true,
   "price": 450,
-  "currency": "Rs",
-  "minQuantity": 10,
-  "isPriceAva": true
+  "currency": "INR",
+  "minQuantity": 10
 }
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
@@ -207,21 +228,31 @@ Content-Disposition: form-data; name="dto"
 DELETE {{baseURL}}/product/deleteProduct/1
 Authorization: Bearer {{token}}
 
-### GET Business Product by ID
-GET {{baseURL}}/product/getProductById/2
-Authorization: Bearer {{token}}
-
-###  Fetch all Product
-POST {{baseURL}}/product/getProduct
-Authorization: Bearer {{token}}
+### GET ALL Business Products (with pagination, filters, sorting)
+POST {{baseURL}}/business-product/getAll
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "search": "",
-  "page":1,
+  "page": 1,
+  "limit": 10,
+  "businessId": 2,
+  "isActive": true,
   "sortBy": "price",
   "order": "ASC"
 }
+
+# sortBy = 'price', 'minQuantity', 'createdAt', 'updatedAt'
+
+### GET Business Product by ID
+GET {{baseURL}}/business-product/getById/12
+Authorization: Bearer {{token}}
+
+### Approval Group name
+GET {{baseURL}}/approval-config/groups?search=&sort=DESC&page=1&limit=5
+Content-Type: application/json
+Authorization: Bearer {{token}}
 
 ### CREATE Business Product
 POST {{baseURL}}/business-product/create
@@ -232,8 +263,9 @@ Authorization: Bearer {{token}}
   "businessId": 2,
   "productId": 2,
   "price": 299.99,
-  "currency": "USD",
+  "currency": "INR",
   "minQuantity": 5,
+  "groupName":"GROUP-1",
   "isActive": true
 }
 
@@ -252,35 +284,6 @@ Authorization: Bearer {{token}}
 DELETE {{baseURL}}/business-product/delete/1
 Authorization: Bearer {{token}}
 
-### GET Business Product by ID
-GET {{baseURL}}/business-product/getById/12
-Authorization: Bearer {{token}}
-
-### GET ALL Business Products (with pagination, filters, sorting)
-POST {{baseURL}}/business-product/getAll
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "search": "",
-  "page": 1,
-  "limit": 10,
-  "businessId": 2,
-  "isActive": true,
-  "sortBy": "price",
-  "order": "ASC"
-}
-
-### Add to Cart
-POST {{baseURL}}/cart/addToCart
-Content-Type: application/json
-Authorization: Bearer {{token}}
-
-{
-  "bpId": 12,
-  "quantity": 2
-}
-
 ### Get User Cart (with pagination)
 POST {{baseURL}}/cart/getUserCart
 Content-Type: application/json
@@ -291,8 +294,18 @@ Authorization: Bearer {{token}}
   "limit": 10
 }
 
+### Add to Cart
+POST {{baseURL}}/cart/addToCart
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "bpId": 1,
+  "quantity": 1
+}
+
 ### Remove Item from Cart
-DELETE {{baseURL}}/cart/deleteFromCart/1
+DELETE {{baseURL}}/cart/deleteFromCart/73
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -307,7 +320,7 @@ Content-Type: application/json
 }
 
 ### 1️⃣ Create Approval Config
-POST {{baseURL}}/approval-config
+POST {{baseURL}}/approval-config/create
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -317,22 +330,37 @@ Authorization: Bearer {{token}}
   "minAmount": 5000,
   "maxAmount": 10000,
   "autoApprove": false,
+  "groupName" : "GROUP-1",
   "isActive": true
 }
 
 
-### 2️⃣ Get All Approval Configs (Paginated)
-GET {{baseURL}}/approval-config?page=1&limit=10
+### Get All Approval Configs (Paginated)
+POST {{baseURL}}/approval-config/find
 Authorization: Bearer {{token}}
+Content-Type: application/json
 
+{
+  "page": 1,
+  "limit": 10,
+  "search": "",
+  "groupName": "GROUP-1",
+  "userId": null,
+  "createdById": 16,
+  "isActive": true,
+  "sortBy": "createdAt",
+  "sortOrder": "DESC"
+}
+
+# sortBy = 'approvalLevel','minAmount','maxAmount','createdAt','updatedAt',
 
 ### 3️⃣ Get Single Approval Config by ID
-GET {{baseURL}}/approval-config/1
+GET {{baseURL}}/approval-config/76
 Authorization: Bearer {{token}}
 
 
 ### 4️⃣ Update Approval Config
-PATCH {{baseURL}}/approval-config/1
+PATCH {{baseURL}}/approval-config/76
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -343,8 +371,34 @@ Authorization: Bearer {{token}}
   "autoApprove": false
 }
 
-
 ### 5️⃣ Delete Approval Config
-DELETE {{baseURL}}/approval-config/1
+DELETE {{baseURL}}/approval-config/75
 Authorization: Bearer {{token}}
+
+### 5️⃣ Create Purchase Requests
+GET {{baseURL}}/pr/create
+Authorization: Bearer {{token}}
+
+### Filter Purchase Requests (POST)
+POST {{baseURL}}/pr/findAll
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "search": "PR-1763241252793",
+  "requestedBy": null,
+  "businessId": 1,
+  "status": "APPROVED",
+  "isActive": true,
+  "page": 1,
+  "limit": 20,
+  "sortBy": "createdAt",
+  "order": "DESC"
+}
+
+### 5️⃣ Create Purchase Requests
+GET {{baseURL}}/pr/findOne/71
+Authorization: Bearer {{token}}
+
+
 

@@ -1,3 +1,16 @@
+1. auth
+2. categories
+3. products
+4. cart
+5. approvalconfig
+6. business
+7. pr
+8. approval - pending
+9. contracts - pending
+10. order - pending
+11. Address - pending
+12. Payment - pending
+
 Run backend :nest start --watch
 
 Run frontend :npm run dev
@@ -32,7 +45,7 @@ docker exec -it <container name>  psql -U postgres -d appdb
 \dt
 
 List of TABLE:
-SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+SELECT table_name FROM information_schema.tables git WHERE table_schema = 'public';
 
 
 # Build and remove storage
