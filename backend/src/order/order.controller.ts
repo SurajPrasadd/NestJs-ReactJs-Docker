@@ -22,16 +22,17 @@ import {
 import { GetOrdersDto } from './dto/get-orders.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { UploadFile } from '../common/upload-file.decorator';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Get('createOrder')
-  async createOrder(@Req() req) {
+  @Post('createOrder')
+  async createOrder(@Req() req, @Body() dto: CreateOrderDto) {
     try {
       const user = req.user; // from JWT guard
-      const result = await this.orderService.createOrderFromCart(user);
+      const result = await this.orderService.createOrderFromCart(user, dto);
       return ResponseUtil.success(MESSAGES.SUCCESS, result);
     } catch (error) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);

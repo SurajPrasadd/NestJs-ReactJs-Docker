@@ -12,7 +12,11 @@ import { CartItem } from '../cart/cart-item.entity';
 import { Users } from '../users/user.entity';
 import { GetOrdersDto } from './dto/get-orders.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { ORDER_STATUS } from '../common/constants/app.constants';
+import {
+  DILETA_DEFAULT_DAYS,
+  ORDER_STATUS,
+} from '../common/constants/app.constants';
+import { CreateOrderDto } from './dto/create-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -25,7 +29,7 @@ export class OrderService {
     private readonly cartRepo: Repository<CartItem>,
   ) {}
 
-  async createOrderFromCart(user: Users) {
+  async createOrderFromCart(user: Users, dto: CreateOrderDto) {
     const today = new Date().toISOString().split('T')[0];
 
     // 1️⃣ Fetch all cart items with contracts
@@ -57,11 +61,17 @@ export class OrderService {
     // 3️⃣ Create order number (simple example)
     const orderNumber = `ORD-${Date.now()}`;
 
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + DILETA_DEFAULT_DAYS);
+    const next7Days = futureDate.toISOString().split('T')[0];
+
     // 4️⃣ Create order entity
     const order = this.orderRepo.create({
       orderNumber,
       createdBy: user,
       totalAmount,
+      deliveryAddress: dto.deliveryAddress,
+      expectedDeliveryDate: next7Days,
       status: ORDER_STATUS.PENDING,
       isActive: true,
       items: [],

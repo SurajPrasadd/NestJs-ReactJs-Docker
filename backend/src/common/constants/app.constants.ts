@@ -63,3 +63,4 @@ export const UPLOAD_PATH = {
 };
 
 export const CONTRACT_DEFAULT_YEAR = 1;
+export const DILETA_DEFAULT_DAYS = 7;

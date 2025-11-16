@@ -494,8 +494,13 @@ Content-Disposition: form-data; name="dto"
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ### Place a Order
-GET {{baseURL}}/orders/createOrder
+POST {{baseURL}}/orders/createOrder
+Content-Type: application/json
 Authorization: Bearer {{token}}
+
+{
+  "deliveryAddress": "CMC Khata No  City Muncipal 898   Bellary Rd  Ambedkar Colony Yelahanka Bengaluru  Karnataka 560064"
+}
 
 ### GET ORDERS — With Filters
 POST {{baseURL}}/orders/getAllOrders
