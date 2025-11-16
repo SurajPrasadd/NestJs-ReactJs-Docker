@@ -1,8 +1,50 @@
-import { IsOptional, IsString, IsIn, IsDateString } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsInt,
+  IsArray,
+  ValidateNested,
+  IsNumber,
+  IsDateString,
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+class UpdateOrderItemDto {
+  @IsOptional()
+  @IsInt()
+  id?: number; // null → create new item
+
+  @IsOptional()
+  @IsString()
+  prNumber?: string;
+
+  @IsOptional()
+  @IsInt()
+  bpId?: number;
+
+  @IsOptional()
+  @IsInt()
+  quantity?: number;
+
+  @IsOptional()
+  @IsNumber()
+  price?: number;
+
+  @IsOptional()
+  @IsString()
+  comment?: string;
+
+  @IsOptional()
+  @IsString()
+  status?: string; // PENDING | SHIPPED | DELIVERED | CANCELLED
+}
 
 export class UpdateOrderDto {
+  @IsInt()
+  id?: number;
+
   @IsOptional()
-  @IsIn(['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED', 'CANCELLED'])
+  @IsString()
   status?: string;
 
   @IsOptional()
@@ -15,5 +57,15 @@ export class UpdateOrderDto {
 
   @IsOptional()
   @IsDateString()
-  expectedDeliveryDate?: Date;
+  expectedDeliveryDate?: string;
+
+  @IsOptional()
+  @IsString()
+  invoicelink?: string;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => UpdateOrderItemDto)
+  items?: UpdateOrderItemDto[];
 }

@@ -102,7 +102,7 @@ Content-Type: application/json
 
 
 ### Manually set the access token here after login
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkMjU0MzgzMi01ZTY4LTQ5NTQtOTBmMi0wNjlhZTYzNjYxYzkiLCJpYXQiOjE3NjMyNDE5NDgsImV4cCI6MTc2MzI0Mjg0OH0.eYco5UwtAIC2vAv-G0QWoV-6RnReU4Z19WGAVcO8JZY
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjOTg2NDQzMS0xNjZiLTQyZDAtODdmZS1jZGY5NmQyZWY3ZTQiLCJpYXQiOjE3NjMyNzYwNjIsImV4cCI6MTc2Mzg4MDg2Mn0.I67e3OTSgBwplv9JzQm_lbH8spCsLYJtmps4_9KO0q4
 
 @refreshToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2N2M4NjhjMC03NWQ4LTQ1NTctOTE1MS1iNjcyZjhjNDUyNjkiLCJpYXQiOjE3NjMyMjMyMjgsImV4cCI6MTc2MzgyODAyOH0.m0wChIiB0Q6ilX-Nhuumj02eN0XvImlciUoD28tsl4s
 
@@ -260,8 +260,8 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "businessId": 2,
-  "productId": 2,
+  "businessId": 1,
+  "productId": 1,
   "price": 299.99,
   "currency": "INR",
   "minQuantity": 5,
@@ -270,13 +270,14 @@ Authorization: Bearer {{token}}
 }
 
 ### UPDATE Business Product
-PATCH {{baseURL}}/business-product/update/11
+PATCH {{baseURL}}/business-product/update/22
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "price": 249.99,
-  "minQuantity": 3,
+  "price": 22,
+  "minQuantity": 1,
+  "groupName":"GROUP-1",
   "isActive": true
 }
 
@@ -300,12 +301,12 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "bpId": 1,
+  "bpId": 36,
   "quantity": 1
 }
 
 ### Remove Item from Cart
-DELETE {{baseURL}}/cart/deleteFromCart/73
+DELETE {{baseURL}}/cart/deleteFromCart/10
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -315,8 +316,8 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "bpId": 12,
-  "quantity": 1
+  "bpId": 36,
+  "quantity": 2
 }
 
 ### 1️⃣ Create Approval Config
@@ -325,11 +326,11 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "userId": 14,
+  "userId": 16,
   "approvalLevel": 1,
-  "minAmount": 5000,
-  "maxAmount": 10000,
-  "autoApprove": false,
+  "minAmount": 300,
+  "maxAmount": 400,
+  "autoApprove": true,
   "groupName" : "GROUP-1",
   "isActive": true
 }
@@ -385,10 +386,10 @@ Content-Type: application/json
 Authorization: Bearer {{token}}
 
 {
-  "search": "PR-1763241252793",
+  "search": "",
   "requestedBy": null,
-  "businessId": 1,
-  "status": "APPROVED",
+  "businessId": 2,
+  "status": "PARTIALLY_APPROVED",
   "isActive": true,
   "page": 1,
   "limit": 20,
@@ -396,9 +397,154 @@ Authorization: Bearer {{token}}
   "order": "DESC"
 }
 
-### 5️⃣ Create Purchase Requests
+### 5️⃣ Get One Purchase Requests
 GET {{baseURL}}/pr/findOne/71
 Authorization: Bearer {{token}}
+
+### Get Approvals using POST filter
+POST {{baseURL}}/approval/all
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "search": "",
+  "status": "PENDING",
+  "approvedBy": 2,
+  "sortBy": "createdAt",
+  "sortOrder": "DESC",
+  "page": 1,
+  "limit": 10
+}
+
+### Get Approvals by User using POST filter
+POST {{baseURL}}/approval/allByUser
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "search": "",
+  "status": "PENDING",
+  "sortBy": "createdAt",
+  "sortOrder": "DESC",
+  "page": 1,
+  "limit": 10
+}
+
+### Get One Approvals Requests
+GET {{baseURL}}/approval/findOne/7
+Authorization: Bearer {{token}}
+
+### Reject Approvals
+POST {{baseURL}}/approval/action
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "REJECTED",
+  "approvalIds": [7],
+  "comments": "Insufficient justification"
+}
+
+# status APPROVED REJECTED
+
+### Get Contracts (POST)
+POST {{baseURL}}/contracts/list
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "userId": null,
+  "businessId": null,
+  "isActive": true,
+  "search": "PR-1763281555103",
+  "page": 1,
+  "limit": 20,
+  "sortBy": "createdAt",
+  "sortOrder": "DESC"
+}
+
+### Get One Contracts
+GET {{baseURL}}/contracts/getContractById/1
+Authorization: Bearer {{token}}
+
+### Get One Contracts
+POST {{baseURL}}/contracts/createContracts
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="contract.pdf"
+Content-Type: application/pdf
+
+< ./db/testfile/contract.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="dto"
+
+{
+  "prNumber": "PR-1763281555103",
+  "items": [
+    {
+      "itemId": 12,
+      "price": 1200,
+      "endDate": "2025-12-30",
+      "isActive": true
+    }
+  ]
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Place a Order
+GET {{baseURL}}/orders/createOrder
+Authorization: Bearer {{token}}
+
+### GET ORDERS — With Filters
+POST {{baseURL}}/orders/getAllOrders
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "status": "",
+  "userId": 16,
+  "businessId": null,
+  "search": "",
+  "page": 1,
+  "limit": 10,
+  "sortBy": "createdAt",
+  "sortOrder": "DESC"
+}
+
+### UPDATE ORDER (with PDF invoice)
+POST {{baseURL}}/orders/updateOrder
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="contract.pdf"
+Content-Type: application/pdf
+
+< ./db/testfile/Invoice.pdf
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="dto"
+
+{
+  "id": 1,
+  "status": "INVOICE_GENERATED",
+  "remarks": "Invoice updated",
+  "deliveryAddress": "New Warehouse Location",
+  "expectedDeliveryDate": "2025-12-10",
+  "items": [
+    {
+      "id": 1,
+      "quantity": 5,
+      "price": 120,
+      "status": "SHIPPED"
+    }
+  ]
+}
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
+
 
 
 

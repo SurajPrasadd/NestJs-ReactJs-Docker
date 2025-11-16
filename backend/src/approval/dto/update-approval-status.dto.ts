@@ -8,9 +8,6 @@ import {
 } from 'class-validator';
 
 export class UpdateApprovalStatusDto {
-  @IsString()
-  prNumber: string;
-
   @IsEnum(['APPROVED', 'REJECTED'])
   status: 'APPROVED' | 'REJECTED';
 
@@ -18,7 +15,7 @@ export class UpdateApprovalStatusDto {
   @IsArray()
   @ArrayNotEmpty()
   @IsInt({ each: true })
-  itemIds?: number[];
+  approvalIds?: number[];
 
   @IsOptional()
   @IsString()

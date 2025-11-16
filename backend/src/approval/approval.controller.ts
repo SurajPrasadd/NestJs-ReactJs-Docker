@@ -23,8 +23,8 @@ import { GetApprovalsQueryDto } from './dto/query-approval.dto';
 export class ApprovalController {
   constructor(private readonly approvalService: ApprovalService) {}
 
-  @Get('all')
-  async getAllApprovals(@Query() query: GetApprovalsQueryDto) {
+  @Post('all')
+  async getAllApprovals(@Body() query: GetApprovalsQueryDto) {
     try {
       const result = await this.approvalService.getAllApprovals(query);
       return ResponseUtil.success('All approvals fetched successfully', result);
@@ -33,11 +33,8 @@ export class ApprovalController {
     }
   }
 
-  @Get('allByUser')
-  async getAllByUserApprovals(
-    @Req() req,
-    @Query() query: GetApprovalsQueryDto,
-  ) {
+  @Post('allByUser')
+  async getAllByUserApprovals(@Req() req, @Body() query: GetApprovalsQueryDto) {
     try {
       query.approvedBy = req.user.id;
       const result = await this.approvalService.getAllApprovals(query);
@@ -49,15 +46,22 @@ export class ApprovalController {
 
   @Get('findOne/:id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.approvalService.findOne(id);
+    try {
+      return ResponseUtil.success(
+        'Approvals fetched successfully',
+        await this.approvalService.findOne(id),
+      );
+    } catch (error) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
   }
 
-  @Patch('action')
+  @Post('action')
   async approveOrReject(@Req() req, @Body() dto: UpdateApprovalStatusDto) {
     try {
       const userId = req.user.id;
       const result = await this.approvalService.approveOrReject(dto, userId);
-      return ResponseUtil.success(result.message, result);
+      return ResponseUtil.success(MESSAGES.UPDATED, null);
     } catch (error) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }

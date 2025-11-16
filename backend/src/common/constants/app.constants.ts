@@ -29,15 +29,21 @@ export const MESSAGES = {
   },
 };
 
-export const VENDOR = 'vendor';
-export const BUYER = 'buyer';
-export const APPROVER = 'approver';
 export const ROLES = ['admin', 'vendor', 'approver', 'buyer'];
 
 export const PR_STATUS = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
   PARTIALLY_APPROVED: 'PARTIALLY_APPROVED',
+  REJECTED: 'REJECTED',
+};
+
+export const ORDER_STATUS = {
+  PENDING: 'PENDING',
+  CANCELLED: 'CANCELLED',
+  INVOICE_GENERATED: 'INVOICE_GENERATED',
+  SHIPPED: 'SHIPPED',
+  DELIVERED: 'DELIVERED',
 };
 
 export const RESPONSE_CODE = {
@@ -53,4 +59,7 @@ export const RESPONSE_CODE = {
 export const UPLOAD_PATH = {
   IMAGE: '/uploads/products/',
   CONTRACT: '/uploads/contracts/',
+  INVOICE: '/uploads/invoice/',
 };
+
+export const CONTRACT_DEFAULT_YEAR = 1;

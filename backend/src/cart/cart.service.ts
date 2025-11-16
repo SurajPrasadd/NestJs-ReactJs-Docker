@@ -27,33 +27,28 @@ export class CartService {
     // 🔹 Step 1: Find the BusinessProduct
     const businessProduct = await this.bpRepo.findOne({
       where: { id: bpId },
-      relations: ['product', 'business'],
     });
     if (!businessProduct)
       throw new NotFoundException('Business product not found');
 
-    const today = new Date();
     // 🔹 Step 2: Try to find an active Contract for this user + business + businessProduct
-    const contract = await this.contractRepo.findOne({
-      where: [
-        {
-          buyer: { id: user.id },
-          business: { id: businessProduct.business?.id },
-          businessProduct: { id: businessProduct.id },
-          isActive: true,
-          endDate: IsNull(), // Case 1: No end date
-        },
-        {
-          buyer: { id: user.id },
-          business: { id: businessProduct.business?.id },
-          businessProduct: { id: businessProduct.id },
-          isActive: true,
-          endDate: MoreThanOrEqual(today), // Case 2: Not expired yet
-        },
-      ],
-      relations: ['buyer', 'business', 'businessProduct'],
-    });
+    const today = new Date().toISOString().split('T')[0]; // Compare DATE with DATE only
 
+    const contract = await this.contractRepo
+      .createQueryBuilder('contract')
+      .where('contract.buyer_id = :userId', { userId: user.id })
+      .andWhere('contract.bp_id = :bpId', { bpId: businessProduct.id })
+      .andWhere('contract.is_active = true')
+      .andWhere(
+        `
+    (
+      contract.end_date IS NULL 
+      OR contract.end_date >= :today
+    )
+  `,
+        { today },
+      )
+      .getOne();
     // 🔹 Step 3: Check if product already in cart
     let cartItem = await this.cartRepo.findOne({
       where: {
@@ -114,26 +109,30 @@ export class CartService {
   }
 
   async refreshCartContracts(): Promise<number> {
-    const today = new Date();
+    const today = new Date().toISOString().split('T')[0]; // compare DATE only
 
-    // 1️⃣ Find all cart items where contract exists and is expired
-    const carts = await this.cartRepo.find({
-      where: {
-        contract: {
-          endDate: MoreThanOrEqual(today), // ❌ as per your requirement (>= today)
-        },
-      },
-      relations: ['contract'],
-    });
+    // 1️⃣ Find all cart items with EXPIRED contracts
+    const carts = await this.cartRepo
+      .createQueryBuilder('cart')
+      .leftJoinAndSelect('cart.contract', 'contract')
+      .where('cart.contract_id IS NOT NULL') // has contract
+      .andWhere(
+        `
+      contract.end_date IS NOT NULL
+      AND contract.end_date < :today
+    `,
+        { today },
+      )
+      .getMany();
 
-    // 2️⃣ Unlink contract
+    // 2️⃣ Unlink expired contracts
     for (const cart of carts) {
       cart.contract = null;
     }
 
-    // 3️⃣ Save all changes
+    // 3️⃣ Save updates
     await this.cartRepo.save(carts);
 
-    return carts.length; // number of cart items updated
+    return carts.length;
   }
 }

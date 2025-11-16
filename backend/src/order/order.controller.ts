@@ -9,19 +9,25 @@ import {
   Post,
   Query,
   Req,
+  UploadedFile,
   UseGuards,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { ResponseUtil } from '../common/utils/response.util';
-import { MESSAGES, RESPONSE_CODE } from '../common/constants/app.constants';
+import {
+  MESSAGES,
+  RESPONSE_CODE,
+  UPLOAD_PATH,
+} from '../common/constants/app.constants';
 import { GetOrdersDto } from './dto/get-orders.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { UploadFile } from '../common/upload-file.decorator';
 
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
-  @Post('createOrder')
+  @Get('createOrder')
   async createOrder(@Req() req) {
     try {
       const user = req.user; // from JWT guard
@@ -32,23 +38,33 @@ export class OrderController {
     }
   }
 
-  @Get()
-  async getAllOrders(@Query() query: GetOrdersDto) {
+  @Post('getAllOrders')
+  async getAllOrders(@Body() query: GetOrdersDto) {
     try {
       return ResponseUtil.success(
         MESSAGES.SUCCESS,
-        this.orderService.getAllOrders(query),
+        await this.orderService.getAllOrders(query),
       );
     } catch (error) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }
   }
 
-  @Patch(':id')
+  @Post('updateOrder')
+  @UploadFile('pdf', 'invoice')
   async updateOrder(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateOrderDto,
+    @Body('dto') dtoString: string, // JSON string
+    @UploadedFile() file: Express.Multer.File,
   ) {
-    return this.orderService.updateOrder(id, dto);
+    try {
+      const imagePath = file ? UPLOAD_PATH.INVOICE + file.filename : null;
+      const dto: UpdateOrderDto = JSON.parse(dtoString);
+      return ResponseUtil.success(
+        MESSAGES.SUCCESS,
+        await this.orderService.updateOrder(dto, imagePath),
+      );
+    } catch (error) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
   }
 }

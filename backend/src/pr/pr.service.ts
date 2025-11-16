@@ -131,7 +131,7 @@ export class PRService {
         let anyPending = false;
         for (const config of configs) {
           await this.approvalRepo.save({
-            prItem,
+            purchaseRequestItem: prItem,
             approvedBy: config.user,
             approvalLevel: config.approvalLevel,
             status: config.autoApprove ? PR_STATUS.APPROVED : PR_STATUS.PENDING,
@@ -159,8 +159,10 @@ export class PRService {
 
     if (allApproved) {
       purchaseRequest.status = PR_STATUS.APPROVED;
+      await this.prRepo.save(purchaseRequest);
     } else if (anyApproved) {
       purchaseRequest.status = PR_STATUS.PARTIALLY_APPROVED;
+      await this.prRepo.save(purchaseRequest);
     }
 
     // 7️⃣ Clear user's cart

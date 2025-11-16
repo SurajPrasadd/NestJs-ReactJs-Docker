@@ -1,16 +1,37 @@
 import {
-  IsDateString,
+  IsArray,
+  ValidateNested,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
-  IsString,
+  IsDateString,
+  IsNumber,
+  IsBoolean,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class CreateContractDto {
+export class ContractItemDto {
   @IsNotEmpty()
-  prNumber: string; // From PurchaseRequest.prNumber
+  itemId: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  price: number;
 
   @IsOptional()
   @IsDateString()
-  endDate?: string; // optional date input (ISO string)
+  endDate?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+}
+
+export class CreateContractDto {
+  @IsNotEmpty()
+  prNumber: string;
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => ContractItemDto)
+  items: ContractItemDto[];
 }

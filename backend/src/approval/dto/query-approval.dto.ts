@@ -1,5 +1,4 @@
 import { IsOptional, IsString, IsIn, IsInt } from 'class-validator';
-import { Type } from 'class-transformer';
 
 export class GetApprovalsQueryDto {
   @IsOptional()
@@ -7,11 +6,10 @@ export class GetApprovalsQueryDto {
   search?: string; // search by PR number or remarks
 
   @IsOptional()
-  @IsIn(['PENDING', 'APPROVED', 'REJECTED', 'PARTIALLY_APPROVED'])
-  status?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'PARTIALLY_APPROVED';
+  @IsIn(['PENDING', 'APPROVED', 'REJECTED'])
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
 
   @IsOptional()
-  @Type(() => Number)
   @IsInt()
   approvedBy?: number; // optional filter by user
 
@@ -24,12 +22,10 @@ export class GetApprovalsQueryDto {
   sortOrder?: 'ASC' | 'DESC';
 
   @IsOptional()
-  @Type(() => Number)
   @IsInt()
   page?: number = 1;
 
   @IsOptional()
-  @Type(() => Number)
   @IsInt()
   limit?: number = 10;
 }

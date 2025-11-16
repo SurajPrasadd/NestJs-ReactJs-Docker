@@ -3,12 +3,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ResponseUtil } from '../common/utils/response.util';
-import {
-  MESSAGES,
-  RESPONSE_CODE,
-  VENDOR,
-  APPROVER,
-} from '../common/constants/app.constants';
+import { MESSAGES, RESPONSE_CODE } from '../common/constants/app.constants';
 import { RefreshDto } from './dto/refresh.dto';
 import { Public } from './guards/public.decorator';
 

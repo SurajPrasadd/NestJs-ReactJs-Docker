@@ -1,4 +1,3 @@
-import { Type } from 'class-transformer';
 import {
   IsInt,
   IsOptional,
@@ -11,17 +10,14 @@ import {
 export class GetContractsDto {
   @IsOptional()
   @IsInt()
-  @Type(() => Number)
   userId?: number; // buyer_id
 
   @IsOptional()
   @IsInt()
-  @Type(() => Number)
   businessId?: number; // business_id
 
   @IsOptional()
   @IsBoolean()
-  @Type(() => Boolean)
   isActive?: boolean;
 
   @IsOptional()
@@ -30,13 +26,11 @@ export class GetContractsDto {
 
   @IsOptional()
   @IsInt()
-  @Type(() => Number)
   @Min(1)
   page: number = 1;
 
   @IsOptional()
   @IsInt()
-  @Type(() => Number)
   @Min(1)
   limit: number = 10;
 

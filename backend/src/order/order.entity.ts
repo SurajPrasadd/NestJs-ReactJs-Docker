@@ -50,6 +50,9 @@ export class Order {
   @Column({ name: 'expected_delivery_date', type: 'date', nullable: true })
   expectedDeliveryDate: Date | null;
 
+  @Column({ type: 'text', nullable: true })
+  invoicelink: string | null;
+
   // 🔹 Linked order items
   @OneToMany(() => OrderItem, (item) => item.order, {
     cascade: true,

@@ -5,9 +5,9 @@
 5. approvalconfig
 6. business
 7. pr
-8. approval - pending
-9. contracts - pending
-10. order - pending
+8. approval
+9. contracts
+10. order
 11. Address - pending
 12. Payment - pending
 

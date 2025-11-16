@@ -6,13 +6,13 @@ import {
   UseInterceptors,
   Get,
   Query,
+  ParseIntPipe,
+  Param,
+  Req,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { CreateContractDto } from './dto/create-contract.dto';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 import { ContractService } from './contract.service';
-import { UploadFiles } from '../common/upload-file.decorator';
+import { UploadFile } from '../common/upload-file.decorator';
 import {
   MESSAGES,
   RESPONSE_CODE,
@@ -26,30 +26,41 @@ export class ContractController {
   constructor(private readonly contractService: ContractService) {}
 
   @Post('createContracts')
-  @UploadFiles('pdf', 'contracts')
+  @UploadFile('pdf', 'contracts')
   async createContractFromPR(
-    @Body() dto: CreateContractDto,
+    @Body('dto') dtoString: string, // JSON string
     @UploadedFile() file: Express.Multer.File,
   ) {
     try {
       const imagePath = file ? UPLOAD_PATH.CONTRACT + file.filename : null;
+      const dto: CreateContractDto = JSON.parse(dtoString);
       return ResponseUtil.success(
         MESSAGES.SUCCESS,
-        this.contractService.createContractFromPR(dto, imagePath),
+        await this.contractService.createContractFromPR(dto, imagePath),
       );
     } catch (error) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }
   }
 
-  @Get()
-  async getAllContracts(@Query() query: GetContractsDto) {
+  @Post('list')
+  async getAllContracts(@Body() query: GetContractsDto) {
     try {
       return ResponseUtil.success(
         MESSAGES.SUCCESS,
-        this.contractService.getAllContracts(query),
+        await this.contractService.getAllContracts(query),
       );
     } catch (error) {
+      return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
+    }
+  }
+
+  @Get('getContractById/:id')
+  async findOne(@Req() req, @Param('id', ParseIntPipe) id: number) {
+    try {
+      const result = await this.contractService.findOne(id);
+      return ResponseUtil.success(MESSAGES.SUCCESS, result);
+    } catch (error: unknown) {
       return ResponseUtil.handleError(error, RESPONSE_CODE.INTERNAL_ERROR);
     }
   }

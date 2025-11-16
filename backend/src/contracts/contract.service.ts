@@ -4,12 +4,16 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { In, Repository, SelectQueryBuilder } from 'typeorm';
 import { Contract } from './contract.entity';
 import { PurchaseRequest } from '../pr/purchase-requests.entity';
 import { Users } from '../users/user.entity';
 import { CreateContractDto } from './dto/create-contract.dto';
 import { GetContractsDto } from './dto/get-contracts.dto';
+import {
+  CONTRACT_DEFAULT_YEAR,
+  PR_STATUS,
+} from '../common/constants/app.constants';
 
 @Injectable()
 export class ContractService {
@@ -28,48 +32,91 @@ export class ContractService {
     dto: CreateContractDto,
     imagePaths: string | null,
   ) {
-    const { prNumber } = dto;
+    const { prNumber, items = [] } = dto;
 
     // 1️⃣ Find PR with items
-    const pr = await this.prRepo.findOne({
-      where: { prNumber },
+    const purchaseRequest = await this.prRepo.findOne({
+      where: {
+        prNumber,
+        status: In([PR_STATUS.APPROVED, PR_STATUS.PARTIALLY_APPROVED]),
+      },
       relations: [
         'items',
-        'requestedBy',
         'items.businessProduct',
         'items.businessProduct.business',
+        'requestedBy',
       ],
     });
 
-    if (!pr) throw new NotFoundException('Purchase Request not found');
+    if (!purchaseRequest) {
+      throw new NotFoundException(
+        `Purchase Request ${prNumber} not found or not approved`,
+      );
+    }
+    const contractLink = imagePaths || null;
 
     // 2️⃣ Filter only APPROVED items
-    const approvedItems = pr.items.filter((item) => item.status === 'APPROVED');
+    const approvedItems = purchaseRequest.items.filter(
+      (item) => item.status === PR_STATUS.APPROVED,
+    );
     if (approvedItems.length === 0)
       throw new BadRequestException('No approved items found for this PR');
 
-    // 3️⃣ Set contract link if uploaded
-    const contractLink = imagePaths || null;
+    for (const item of approvedItems) {
+      const requestItem = items.find((i) => i.itemId === item.id);
+      const buyerId = purchaseRequest.requestedBy.id;
+      const bpId = item.businessProduct.id;
 
-    // 4️⃣ Prepare contracts
-    const contractsToSave: Contract[] = approvedItems.map((item) => {
-      const contract = new Contract();
-      contract.prNumber = prNumber;
-      contract.buyer = pr.requestedBy;
-      contract.business = item.businessProduct?.business;
-      contract.businessProduct = item.businessProduct;
-      contract.price = item.price;
-      contract.contractslink = contractLink;
-      contract.startDate = new Date();
-      contract.endDate = dto.endDate ? new Date(dto.endDate) : null; // ✅ Added
-      contract.isActive = true;
-      return contract;
-    });
+      // DEFAULT END DATE = TODAY + 1 YEAR
+      const defaultEndDate = new Date();
+      defaultEndDate.setFullYear(
+        defaultEndDate.getFullYear() + CONTRACT_DEFAULT_YEAR,
+      );
 
-    // 5️⃣ Save all contracts at once
-    const savedContracts = await this.contractRepo.save(contractsToSave);
+      // VALUES BASED ON REQUEST OR DEFAULTS
+      const price = requestItem?.price ?? item.price;
+      const endDate = requestItem?.endDate
+        ? new Date(requestItem.endDate)
+        : defaultEndDate;
+      const isActive = requestItem?.isActive ?? true;
 
-    return savedContracts;
+      // Check existing contract
+      let contract = await this.contractRepo.findOne({
+        where: {
+          prNumber,
+          buyer: { id: buyerId },
+          businessProduct: { id: bpId },
+        },
+        relations: ['buyer', 'businessProduct'],
+      });
+
+      if (contract) {
+        // UPDATE
+        contract.business = item.businessProduct.business;
+        contract.price = price;
+        contract.contractslink = contractLink;
+        contract.endDate = endDate;
+        contract.isActive = isActive;
+
+        await this.contractRepo.save(contract);
+      } else {
+        // CREATE
+        contract = this.contractRepo.create({
+          prNumber,
+          buyer: purchaseRequest.requestedBy,
+          businessProduct: item.businessProduct,
+          business: item.businessProduct.business,
+          price: price,
+          contractslink: contractLink,
+          startDate: new Date(),
+          endDate: endDate,
+          isActive: isActive,
+        });
+
+        await this.contractRepo.save(contract);
+      }
+    }
+    return null;
   }
 
   async getAllContracts(dto: GetContractsDto) {
@@ -91,7 +138,8 @@ export class ContractService {
       .createQueryBuilder('contract')
       .leftJoinAndSelect('contract.business', 'business')
       .leftJoinAndSelect('contract.buyer', 'buyer')
-      .leftJoinAndSelect('contract.businessProduct', 'bp');
+      .leftJoinAndSelect('contract.businessProduct', 'bp')
+      .leftJoinAndSelect('bp.product', 'product');
 
     // 🔹 Filters
     if (businessId) qb.andWhere('business.id = :businessId', { businessId });
@@ -122,12 +170,26 @@ export class ContractService {
 
     return {
       data: contracts,
-      pagination: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / take),
-      },
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     };
+  }
+
+  async findOne(id: number) {
+    const record = this.contractRepo
+      .createQueryBuilder('contract')
+      .leftJoinAndSelect('contract.business', 'business')
+      .leftJoinAndSelect('contract.buyer', 'buyer')
+      .leftJoinAndSelect('contract.businessProduct', 'bp')
+      .leftJoinAndSelect('bp.product', 'product')
+      .where('contract.id = :id', { id })
+      .getOne();
+    // ✅ Handle not found
+    if (!record) {
+      throw new NotFoundException('Product not found');
+    }
+    return record;
   }
 }
