@@ -8,8 +8,8 @@
 8. approval
 9. contracts
 10. order
-11. Address - pending
-12. Payment - pending
+11. Address
+12. Payment
 
 Run backend :nest start --watch
 

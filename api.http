@@ -548,6 +548,58 @@ Content-Disposition: form-data; name="dto"
 }
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
+### 🔹 Create Razorpay Order
+POST {{baseURL}}/payment/create
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "orderId": 1001
+}
+
+### 🔹 Verify Payment Callback
+POST {{baseURL}}/payment/verify
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "razorpay_order_id": "order_OgF3dJEW88",
+  "razorpay_payment_id": "pay_K98nn2WSW",
+  "razorpay_signature": "generated_signature_here"
+}
+
+### Test Get Webhook signature
+GET {{baseURL}}/payment/generate-signature
+
+### Test Webhook signature
+@signature = 509e6ae748fc75864e578ba2e24b21beaa8d47e770d9c9876472ed784d5c029d
+
+### Test Webhook (valid signature example)
+POST {{baseURL}}/payment/webhook
+Content-Type: application/json
+x-razorpay-signature: {{signature}}
+
+{"event":"payment.captured","payload":{"payment":{"entity":{"id":"pay_test123","amount":55000,"order_id":"order_test_001"}}}}
+
+### Refund Payment
+POST {{baseURL}}/payment/refund
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "paymentId": 5,
+  "amount":50
+}
+
+### 🔹 Get Payment Status
+POST {{baseURL}}/payment/refundStatus
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "refundId": 1
+}
+
 
 
 

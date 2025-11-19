@@ -17,6 +17,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ApprovalModule } from './approval/approval.module';
 import { PRModule } from './pr/pr.module';
 import { ApprovalConfigModule } from './approvalconfig/approval-config.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { ApprovalConfigModule } from './approvalconfig/approval-config.module';
     ApprovalModule,
     PRModule,
     ApprovalConfigModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService, SequenceFixService],

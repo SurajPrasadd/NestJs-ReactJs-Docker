@@ -11,6 +11,8 @@ import {
 import { Users } from '../users/user.entity';
 import { PurchaseRequest } from '../pr/purchase-requests.entity';
 import { OrderItem } from './order-item.entity';
+import { Payment } from '../payment/payment.entity';
+import { Refund } from '../payment/refund.entity';
 
 @Entity('orders')
 export class Order {
@@ -52,6 +54,12 @@ export class Order {
 
   @Column({ type: 'text', nullable: true })
   invoicelink: string | null;
+
+  @OneToMany(() => Payment, (p) => p.order)
+  payments: Payment[];
+
+  @OneToMany(() => Refund, (r) => r.order)
+  refunds: Refund[];
 
   // 🔹 Linked order items
   @OneToMany(() => OrderItem, (item) => item.order, {

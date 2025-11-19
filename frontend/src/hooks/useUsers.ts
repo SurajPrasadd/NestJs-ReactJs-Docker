@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { api } from "../api/client";
+import API from "../api/client";
 
 export const useUsers = () =>
   useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const { data } = await api.get("/users");
+      const { data } = await API.get("/users");
       return data;
     },
   });
