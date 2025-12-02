@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDFC First Bank - Leads</title>
+    <style>
+          body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5e6e0;
+        overflow-x: hidden;
+    }
+
+    .container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        width: 200px;
+        background-color: #4a2618;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        height: 100vh;
+        z-index: 1000;
+        transition: transform 0.3s ease;
+    }
+
+    .sidebar.closed {
+        transform: translateX(-100%);
+    }
+
+    .logo {
+        padding: 24px;
+        border-bottom: 1px solid #5a3628;
+    }
+
+    .logo-box {
+        background-color: #8b4513;
+        padding: 12px;
+        border-radius: 4px;
+    }
+
+    .logo-box .title {
+        font-size: 12px;
+        font-weight: bold;
+    }
+
+    .logo-box .subtitle {
+        font-size: 10px;
+    }
+
+    .nav-menu {
+        flex: 1;
+        padding-top: 16px;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 24px;
+        color: #4a2618;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        background-color: transparent;
+        margin: 4px 0 4px 5px;
+    }
+
+    .nav-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .nav-item.active {
+        background-color: #5a3628;
+        color: white;
+        font-weight: 600;
+        border-top-left-radius: 24px;
+        border-bottom-left-radius: 24px;
+    }
+
+    .nav-item svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        margin-left: 200px;
+        display: flex;
+        flex-direction: column;
+        transition: margin-left 0.3s ease;
+    }
+
+    .main-content.expanded {
+        margin-left: 0;
+    }
+
+    /* Header */
+    .header {
+        background-color: #f5e6e0;
+        padding: 20px 32px;
+        border-bottom: 1px solid #e0d0c8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .welcome-text {
+        font-size: 24px;
+        color: #4a2618;
+        font-weight: 500;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-details {
+        text-align: right;
+    }
+
+    .user-name {
+        font-weight: 600;
+        color: #4a2618;
+    }
+
+    .user-role {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: #999;
+    }
+
+    /* Mobile Menu Toggle */
+    .menu-toggle {
+        display: none;
+        background-color: #4a2618;
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 4px;
+        cursor: pointer;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+    }
+
+    .menu-toggle svg {
+        width: 24px;
+        height: 24px;
+    }
+
+    .menu-toggle.hidden {
+        display: none;
+    }
+
+    /* Overlay */
+    .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+    }
+
+    .overlay.active {
+        display: block;
+    }
+
+    /* Leads Content */
+    .leads-content {
+        padding: 32px;
+        flex: 1;
+    }
+
+    .leads-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .leads-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #4a2618;
+    }
+
+    .download-btn {
+        background-color: #c67b6b;
+        color: white;
+        border: none;
+        padding: 12px 32px;
+        border-radius: 24px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: background-color 0.3s;
+    }
+
+    .download-btn:hover {
+        background-color: #b56a5a;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .date-dropdown {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background-color: white;
+        border-radius: 8px;
+        border: 1px solid #e0d0c8;
+        cursor: pointer;
+    }
+
+    .date-dropdown select {
+        border: none;
+        background: transparent;
+        font-size: 14px;
+        color: #4a2618;
+        cursor: pointer;
+        outline: none;
+    }
+
+    .search-bar {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 16px;
+        background-color: white;
+        border-radius: 8px;
+        border: 1px solid #e0d0c8;
+        min-width: 300px;
+    }
+
+    .search-bar input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-size: 14px;
+        color: #4a2618;
+    }
+
+    .search-bar input::placeholder {
+        color: #999;
+    }
+
+    .filter-btn {
+        background-color: transparent;
+        color: #4a2618;
+        border: 2px solid #c67b6b;
+        padding: 10px 24px;
+        border-radius: 24px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+    .filter-btn:hover {
+        background-color: #c67b6b;
+        color: white;
+    }
+
+    /* Table Container */
+    .table-container {
+        background-color: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    thead {
+        background-color: #e8d4cc;
+    }
+
+    th {
+        padding: 16px;
+        text-align: left;
+        font-weight: 600;
+        color: #4a2618;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    td {
+        padding: 16px;
+        border-bottom: 1px solid #f0e8e4;
+        color: #4a2618;
+        font-size: 14px;
+    }
+
+    tr:hover {
+        background-color: #faf7f5;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 6px 16px;
+        border-radius: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .status-new {
+        background-color: #5b4bc4;
+        color: white;
+    }
+
+    .status-process {
+        background-color: #e66f3f;
+        color: white;
+    }
+
+    .status-rejected {
+        background-color: #c94d4d;
+        color: white;
+    }
+
+    .status-disbursed {
+        background-color: #5a8a5a;
+        color: white;
+    }
+
+    /* Pagination */
+    .pagination-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background-color: white;
+        border-top: 1px solid #e0d0c8;
+    }
+
+    .pagination-info {
+        color: #666;
+        font-size: 14px;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .page-btn {
+        width: 36px;
+        height: 36px;
+        border: 1px solid #e0d0c8;
+        background-color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #4a2618;
+        transition: all 0.3s;
+    }
+
+    .page-btn:hover {
+        background-color: #f5e6e0;
+    }
+
+    .page-btn.active {
+        background-color: #4a2618;
+        color: white;
+        border-color: #4a2618;
+    }
+
+    .page-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+        .menu-toggle {
+            display: block;
+        }
+
+        .sidebar {
+            transform: translateX(-100%);
+        }
+
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        .main-content {
+            margin-left: 0;
+        }
+
+        .header {
+            padding: 20px;
+            margin-top: 60px;
+        }
+
+        .welcome-text {
+            font-size: 18px;
+        }
+
+        .user-details {
+            display: none;
+        }
+
+        .leads-content {
+            padding: 20px;
+        }
+
+        .leads-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .download-btn {
+            width: 100%;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .date-dropdown,
+        .search-bar,
+        .filter-btn {
+            width: 100%;
+        }
+
+        .table-wrapper {
+            overflow-x: scroll;
+        }
+
+        table {
+            min-width: 1200px;
+        }
+
+        .pagination-container {
+            flex-direction: column;
+            gap: 16px;
+        }
+    }
+</style>
+</head>
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="menu-toggle" id="menuToggle">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+    </button>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+<!-- Overlay -->
+<div class="overlay" id="overlay"></div>
+
+<div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar closed" id="sidebar" aria-hidden="true">
+        <div class="logo">
+            <div class="logo-box">
+                <div class="title">IDFC FIRST</div>
+                <div class="subtitle">Bank</div>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <a href="#" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item active">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                <span>Leads</span>
+            </a>
+            <a href="#" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                <span>Earnings</span>
+            </a>
+            <a href="#" class="nav-item">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                </svg>
+                <span>Feedback Data</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content expanded" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="welcome-text">Welcome Deepanshu 👋</h1>
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name">Deepanshu</div>
+                    <div class="user-role">Relationship Manager</div>
+                </div>
+                <div class="user-avatar" aria-hidden="true"></div>
+            </div>
+        </header>
+
+        <!-- Leads Content -->
+        <div class="leads-content">
+            <!-- Header with Download -->
+            <div class="leads-header">
+                <h2 class="leads-title">Leads</h2>
+                <button class="download-btn" onclick="downloadData()">Download</button>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="date-dropdown">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <select id="dateRange" onchange="filterByDate()">
+                        <option value="last30">Last 30 Days</option>
+                        <option value="last7">Last 7 Days</option>
+                        <option value="last90">Last 90 Days</option>
+                        <option value="thisMonth">This Month</option>
+                        <option value="lastMonth">Last Month</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <div class="search-bar">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="M21 21l-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" id="searchInput" placeholder="Search by Lead ID/Customer name/Connector Name/Connector Mobile Number etc" onkeyup="searchTable()">
+                </div>
+
+                <button class="filter-btn" onclick="openFilterModal()">Filter</button>
+            </div>
+
+            <!-- Table -->
+            <div class="table-container">
+                <div class="table-wrapper" id="tableWrapper">
+                    <table id="leadsTable">
+                        <thead>
+                            <tr>
+                                <th>Lead ID</th>
+                                <th>Product Name</th>
+                                <th>Lead Created</th>
+                                <th>Connector ID</th>
+                                <th>Connector Name</th>
+                                <th>Product ID</th>
+                                <th>Customer Name</th>
+                                <th>Customer Mob.</th>
+                                <th>Loan Amount</th>
+                                <th>Tenure</th>
+                                <th>Stage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                            <!-- Data will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container">
+                    <div class="pagination-info" id="paginationInfo">
+                        1 to 10 of 21,707 entries
+                    </div>
+                    <div class="pagination">
+                        <button class="page-btn" onclick="changePage('prev')" id="prevBtn" aria-label="Previous page">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <button class="page-btn active" onclick="goToPage(1)">1</button>
+                        <button class="page-btn" onclick="goToPage(2)">2</button>
+                        <button class="page-btn" onclick="goToPage(3)">3</button>
+                        <button class="page-btn" onclick="goToPage(4)">4</button>
+                        <span>...</span>
+                        <button class="page-btn" onclick="goToPage(10)">10</button>
+                        <button class="page-btn" onclick="changePage('next')" id="nextBtn" aria-label="Next page">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Sample Data
+    const leadsData = [
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'new' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'process' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'rejected' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'process' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'disbursed' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'rejected' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'process' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'disbursed' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'process' },
+        { id: '121314245', product: '414213141325934', created: '10 - 06 - 2025', connectorId: '121314245', connectorName: 'Ananya Basu', productId: 'Lorem Ipsum', customerName: 'Lorem Ipsum', customerMob: 'Lorem Ipsum', loanAmount: '₹2,50,000', tenure: '5 Years', status: 'process' },
+    ];
+
+    let currentPage = 1;
+    let filteredData = [...leadsData];
+
+    // Render Table
+    function renderTable(data) {
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        data.forEach(lead => {
+            const statusClass = `status-${lead.status}`;
+            const statusText = lead.status === 'process' ? 'In Process' :
+                             lead.status === 'new' ? 'New' :
+                             lead.status === 'rejected' ? 'Rejected' : 'Disbursed';
+
+            const row = `
+                <tr>
+                    <td>${lead.id}</td>
+                    <td>${lead.product}</td>
+                    <td>${lead.created}</td>
+                    <td>${lead.connectorId}</td>
+                    <td>${lead.connectorName}</td>
+                    <td>${lead.productId}</td>
+                    <td>${lead.customerName}</td>
+                    <td>${lead.customerMob}</td>
+                    <td>${lead.loanAmount}</td>
+                    <td>${lead.tenure}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                </tr>
+            `;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
+    }
+
+    // Search Function
+    function searchTable() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        filteredData = leadsData.filter(lead => {
+            return String(lead.id).toLowerCase().includes(searchTerm) ||
+                   lead.connectorName.toLowerCase().includes(searchTerm) ||
+                   lead.customerName.toLowerCase().includes(searchTerm) ||
+                   String(lead.connectorId).toLowerCase().includes(searchTerm) ||
+                   String(lead.customerMob).toLowerCase().includes(searchTerm);
+        });
+        renderTable(filteredData);
+        updatePaginationInfo();
+        autoScrollTableRightIfMobile();
+    }
+
+    // Filter by Date
+    function filterByDate() {
+        const dateRange = document.getElementById('dateRange').value;
+        console.log('Filtering by:', dateRange);
+        // Implement date filtering here if needed
+    }
+
+    // Download Data
+    function downloadData() {
+        alert('Downloading data...');
+        // Implement actual download logic here
+    }
+
+    // Open Filter Modal
+    function openFilterModal() {
+        alert('Filter modal would open here');
+        // Implement filter modal
+    }
+
+    // Pagination Functions
+    function changePage(direction) {
+        if (direction === 'prev' && currentPage > 1) {
+            currentPage--;
+        } else if (direction === 'next' && currentPage < 10) {
+            currentPage++;
+        }
+        updateActivePage();
+    }
+
+    function goToPage(page) {
+        currentPage = page;
+        updateActivePage();
+    }
+
+    function updateActivePage() {
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        // Update active state if you track buttons dynamically
+        updatePaginationInfo();
+        autoScrollTableRightIfMobile();
+    }
+
+    function updatePaginationInfo() {
+        const total = 21707;
+        const start = (currentPage - 1) * 10 + 1;
+        const end = Math.min(currentPage * 10, total);
+        document.getElementById('paginationInfo').textContent = `${start} to ${end} of ${total.toLocaleString()} entries`;
+    }
+
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+
+    function openSidebar() {
+        sidebar.classList.add('open');
+        sidebar.classList.remove('closed');
+        overlay.classList.add('active');
+        document.body.classList.add('nav-open');
+        sidebar.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('open');
+        sidebar.classList.add('closed');
+        overlay.classList.remove('active');
+        document.body.classList.remove('nav-open');
+        sidebar.setAttribute('aria-hidden', 'true');
+    }
+
+    menuToggle.addEventListener('click', function() {
+        const isOpen = sidebar.classList.contains('open');
+        if (isOpen) {
+            closeSidebar();
+        } else {
+            openSidebar();
+        }
+    });
+
+    overlay.addEventListener('click', function() {
+        closeSidebar();
+    });
+
+    // Navigation Items
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            if (window.innerWidth <= 768) {
+                closeSidebar();
+            }
+
+            navItems.forEach(nav => nav.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+
+    // Table wrapper right scroll for mobile
+    function autoScrollTableRightIfMobile() {
+        const wrapper = document.getElementById('tableWrapper');
+        if (!wrapper) return;
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            // Scroll to the far right to reveal later columns
+            wrapper.scrollLeft = wrapper.scrollWidth;
+        }
+    }
+
+    // Initial Render
+    renderTable(leadsData);
+    updatePaginationInfo();
+    autoScrollTableRightIfMobile();
+
+    // Adjust on resize
+    window.addEventListener('resize', autoScrollTableRightIfMobile);
+</script>
+</body>
+</html>
